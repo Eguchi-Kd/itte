@@ -1,22 +1,11 @@
 // 初期データ（§7.7）。初回起動時に投入する。手番トリガーの例は投入しない
 import type { EpochMs, Joseki, ReasonTag, Settings } from '../domain/types';
+import { ja } from '../copy/ja';
 import { db as defaultDb, type ItteDB } from './db';
 
-export const INITIAL_REASON_TAGS = [
-  '予定外の用事',
-  '疲れ',
-  '忘れた',
-  '気分が乗らない',
-  '体調',
-  '前日の予定の影響',
-  'その他',
-] as const;
-
-export const INITIAL_JOSEKI = [
-  '戻せない手は保留する',
-  '選択肢が増える手を優先する',
-  '迷ったら評価関数に近い手を選ぶ',
-] as const;
+// 初期の文言は禁止語テストの対象にするため src/copy/ja.ts に置く
+export const INITIAL_REASON_TAGS = ja.seed.reasonTags;
+export const INITIAL_JOSEKI = ja.board.joseki;
 
 export function defaultSettings(now: EpochMs): Settings {
   return {

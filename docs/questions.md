@@ -15,3 +15,6 @@ Claude Code が実装中に追記する。形式:
 - [T03] 決めたこと: verifyLedger の結果の reason は 'chain'（連鎖の切れ）／'hash'（レコードの書き換え）／'missing'（台帳にあるレコードがない）／'unlisted'（台帳にないレコード）。'unlisted' の seq は最後のエントリの次の番号にした（関連: SPEC §7.5）
 - [T03] 決めたこと: 不変性のフックは updating と deleting に加え、Dexie 4 では clear() と Collection.delete() も deleting フックを通るので、すべて IMMUTABLE で止まることをテストした（関連: SPEC §7.4 I2）
 - [T03] 決めたこと: リポジトリ関数は §7.6 の「すべて now を引数で受け取る」に合わせ、getSettings と updateSettings も now を受け取る（初回作成の createdAt に使う）（関連: SPEC §7.6）
+- [T04] 決めたこと: 初期データの理由タグと定跡の文言も禁止語テストの対象にするため、src/copy/ja.ts（seed.reasonTags、board.joseki）に置き、src/db/seed.ts から参照する（関連: SPEC §7.7, §5.7-4）
+- [T04] 決めたこと: §6.4 の「スキップ」は付録 A の common.skip（「とばす」）を使う。付録 A を確定版として優先した（関連: SPEC §6.4, 付録 A）
+- [T04] 決めたこと: AC-UX-06 は、streak・badge・confetti・league・leaderboard を部分文字列で、xp を camelCase／snake_case で区切った単語として検査する（関連: SPEC §12.9）
