@@ -1,1 +1,203 @@
 @import 'tailwindcss';
+@import './tokens.css';
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-2: var(--text-2);
+  --color-primary: var(--primary);
+  --color-primary-edge: var(--primary-edge);
+  --color-primary-tint: var(--primary-tint);
+  --color-accent: var(--accent);
+  --color-accent-edge: var(--accent-edge);
+  --color-wood: var(--wood);
+  --color-wood-edge: var(--wood-edge);
+  --color-danger: var(--danger);
+  --color-focus: var(--focus);
+  --font-sans: var(--font-sans);
+}
+
+@theme {
+  --text-timer: 4rem;
+  --text-timer--line-height: 4.5rem;
+  --text-timer--font-weight: 800;
+  --text-display: 2rem;
+  --text-display--line-height: 2.5rem;
+  --text-display--font-weight: 800;
+  --text-h1: 1.5rem;
+  --text-h1--line-height: 2rem;
+  --text-h1--font-weight: 800;
+  --text-h2: 1.25rem;
+  --text-h2--line-height: 1.75rem;
+  --text-h2--font-weight: 700;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5rem;
+  --text-body--font-weight: 500;
+  --text-label: 0.9375rem;
+  --text-label--line-height: 1.25rem;
+  --text-label--font-weight: 700;
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.125rem;
+  --text-caption--font-weight: 500;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+  /* iOS の自動ズームを防ぐ（§10.5） */
+  input,
+  textarea,
+  select {
+    font-size: max(1rem, 16px);
+  }
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .app-column {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 480px;
+    min-height: 100dvh;
+  }
+
+  /* 立体ボタン（§5.4） */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 16px;
+    border-bottom-style: solid;
+    border-bottom-width: 4px;
+    padding-inline: 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    user-select: none;
+    transition:
+      transform var(--dur-press) ease-out,
+      border-bottom-width var(--dur-press) ease-out;
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(2px);
+    border-bottom-width: 2px;
+  }
+  .btn:disabled {
+    background: var(--surface-2);
+    border-bottom-color: var(--border);
+    color: var(--text-2);
+    cursor: not-allowed;
+  }
+  .btn-primary {
+    background: var(--primary);
+    border-bottom-color: var(--primary-edge);
+    color: #fff;
+  }
+  .btn-accent {
+    background: var(--accent);
+    border-bottom-color: var(--accent-edge);
+    color: #1f2328;
+  }
+  .btn-secondary {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: 4px solid var(--border);
+    color: var(--text);
+  }
+  .btn-ghost {
+    background: transparent;
+    border-bottom-color: transparent;
+    color: var(--primary);
+  }
+  .btn-danger {
+    background: var(--danger);
+    border-bottom-color: color-mix(in srgb, var(--danger) 70%, black);
+    color: #fff;
+  }
+
+  /* カード（§5.4）。影を使わず下辺で浮かせる */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom-width: 3px;
+    border-radius: 16px;
+  }
+
+  .bottom-actions {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+
+  .sheet-enter {
+    animation: sheet-in var(--dur-sheet) var(--ease-sheet);
+  }
+  .fade-enter {
+    animation: fade-in var(--dur-sheet) var(--ease-sheet);
+  }
+  .check-draw {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    animation: check-draw var(--dur-check) ease-out forwards;
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* 動きの抑制（§5.5）。すべて不透明度の変化（120ms）だけにする */
+@media (prefers-reduced-motion: reduce) {
+  .sheet-enter,
+  .fade-enter {
+    animation: fade-in 120ms linear;
+  }
+  .btn,
+  .btn:active:not(:disabled) {
+    transition: none;
+    transform: none;
+  }
+  .check-draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: fade-in 120ms linear;
+  }
+}

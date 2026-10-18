@@ -1,0 +1,49 @@
+/* デザイントークン（§5.2〜§5.5）。ダークモードは prefers-color-scheme に追従する（手動切り替えなし） */
+:root {
+  --bg: #f7f7f4;
+  --surface: #ffffff;
+  --surface-2: #f0f0eb;
+  --border: #e2e2dc;
+  --text: #1f2328;
+  --text-2: #5b616b;
+  --primary: #2563eb;
+  --primary-edge: #1d4ed8;
+  --primary-tint: #dbeafe;
+  --accent: #f59e0b;
+  --accent-edge: #d97706;
+  --wood: #e9c98b;
+  --wood-edge: #8a6a3b;
+  --danger: #dc2626;
+  --focus: #93c5fd;
+
+  --font-sans: 'Hiragino Maru Gothic ProN', 'Hiragino Sans', 'BIZ UDPGothic', 'Yu Gothic UI', 'Noto Sans JP',
+    system-ui, sans-serif;
+
+  --ease-sheet: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --dur-press: 80ms;
+  --dur-sheet: 220ms;
+  --dur-expand: 200ms;
+  --dur-check: 280ms;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111418;
+    --surface: #1a1e24;
+    --surface-2: #232831;
+    --border: #2f353e;
+    --text: #e8eaed;
+    --text-2: #a3aab4;
+    --primary: #4c8dff;
+    --primary-edge: #2f6fe0;
+    --primary-tint: #1e2a44;
+    --accent: #fbbf24;
+    --accent-edge: #d99a0b;
+    --wood: #c9a66b;
+    --wood-edge: #6e522b;
+    --danger: #f87171;
+    --focus: #93c5fd;
+  }
+}

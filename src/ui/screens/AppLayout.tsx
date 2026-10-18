@@ -1,10 +1,33 @@
 import { Suspense } from 'react';
-import { Outlet } from 'react-router';
+import { Outlet, useLocation } from 'react-router';
+import { ja } from '../../copy/ja';
+import { BottomNav } from '../components/BottomNav';
+import { Snackbar } from '../components/Snackbar';
+import { FeedbackProvider } from '../feedback/FeedbackProvider';
+import { useSettings } from '../hooks/useSettings';
+import { useUpdateState } from '../hooks/updateContext';
+import { allowsInterruptions, showsBottomNav } from '../routePolicy';
 
 export function AppLayout() {
+  const { pathname } = useLocation();
+  const settings = useSettings();
+  const { needRefresh, update } = useUpdateState();
+
+  // 設定（初期データ）ができるまでは何も描かない
+  if (!settings) return null;
+
+  const nav = showsBottomNav(pathname);
   return (
-    <Suspense fallback={null}>
-      <Outlet />
-    </Suspense>
+    <FeedbackProvider>
+      <div className={`app-column ${nav ? 'pb-24' : ''}`}>
+        <Suspense fallback={null}>
+          <Outlet />
+        </Suspense>
+      </div>
+      {nav && <BottomNav onAdd={() => undefined} />}
+      {needRefresh && allowsInterruptions(pathname) && (
+        <Snackbar text={ja.today.interrupt.update} actionLabel={ja.today.interrupt.updateAction} onAction={update} />
+      )}
+    </FeedbackProvider>
   );
 }

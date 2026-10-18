@@ -1,5 +1,7 @@
-import type { ImmutableTable } from '../../domain/types';
+import type { ImmutableTable, Settings } from '../../domain/types';
 import { db } from '../db';
+import { updateSettings } from '../repo/common';
+import { ensureSeed } from '../seed';
 
 export const NOW = new Date(2026, 9, 18, 12, 0, 0).getTime();
 
@@ -7,6 +9,13 @@ export async function resetDb(): Promise<void> {
   db.close();
   await db.delete();
   await db.open();
+}
+
+/** DB を作り直して初期データを入れる。settings を渡すと上書きする */
+export async function resetSeeded(settings: Partial<Omit<Settings, 'id'>> = {}): Promise<void> {
+  await resetDb();
+  await ensureSeed(NOW);
+  if (Object.keys(settings).length) await updateSettings(settings, NOW);
 }
 
 /** Dexie が包んだエラーも含めて DomainError のコードを取り出す */

@@ -18,3 +18,7 @@ Claude Code が実装中に追記する。形式:
 - [T04] 決めたこと: 初期データの理由タグと定跡の文言も禁止語テストの対象にするため、src/copy/ja.ts（seed.reasonTags、board.joseki）に置き、src/db/seed.ts から参照する（関連: SPEC §7.7, §5.7-4）
 - [T04] 決めたこと: §6.4 の「スキップ」は付録 A の common.skip（「とばす」）を使う。付録 A を確定版として優先した（関連: SPEC §6.4, 付録 A）
 - [T04] 決めたこと: AC-UX-06 は、streak・badge・confetti・league・leaderboard を部分文字列で、xp を camelCase／snake_case で区切った単語として検査する（関連: SPEC §12.9）
+- [T05] 決めたこと: §5.8 の共通コンポーネントのうち、M1 で使わないもの（RingTimer、ScoreInput、DateChips、CheckSheet、TwoStepConfirm、CalibrationChart、QuickActionSheet 以外の着手・盤面・段の部品）は、使うタスク（T16、T21、T24、T25、T26、T31）で作る。MonthCalendar と WeeklyBarChart は T11、QuickActionSheet は T10 で作る（関連: SPEC §5.8, §13）
+- [T05] 決めたこと: 画面の形式（タブ・一覧・レッスン・ウィザード・タイマー・シート・通常）を src/ui/routePolicy.ts の1か所で決め、下部タブ・更新の割り込み・コマの表示可否をそこから引く。コマは判定・タイマー・逃避ログのルートでは自分で描画しない（詰まりシートはタイマーの上のモーダルなので同じルート）（関連: SPEC §5.7, §6.1.1, X7）
+- [T05] 決めたこと: 取り消しのある記録（ホームの「やった」など）はスナックバー（5秒）、取り消しのない記録（レッスンの保存など）はフィードバックシート（1.2秒）を出す。どちらも feedbackFor の同じ音・振動・見た目を使う（関連: SPEC §5.8, §2.2）
+- [T05] 決めたこと: 習慣の詳細と編集は「通常」の画面として下部タブを隠し、閉じる・戻るボタンで戻る（§6.1.1「詳細の編集では隠す」に合わせ、詳細も一覧の外なので隠す）（関連: SPEC §6.1.1）

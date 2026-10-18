@@ -4,14 +4,14 @@ import { APP_NAME } from '../config';
 
 export const ja = {
   app: { name: APP_NAME },
-  nav: { today: 'きょう', board: '盤面', add: '追加', review: 'ふりかえり', library: '記録庫' },
+  nav: { label: 'タブ', today: 'きょう', board: '盤面', add: '追加', review: 'ふりかえり', library: '記録庫' },
   common: {
     next: 'つぎへ', save: '保存', cancel: 'やめる', later: 'あとで', skip: 'とばす', undo: '取り消す',
     check: '確かめる', confirm: '確定する', fix: '入力を直す', close: '閉じる', edit: '編集',
     leaveTitle: 'やめると入力は消えます', leaveStay: '続ける', leaveGo: 'やめる',
     insufficient: '—（{n}件）', recorded: '記録済み', missing: '記録なし',
     back: '戻る', settings: '設定', step: 'ステップ {n}/{total}', loading: '読み込み中',
-    menu: 'メニュー', optional: '（なくてもよい）', select: '選ぶ',
+    menu: 'メニュー', optional: '（なくてもよい）', select: '選ぶ', decrement: '減らす', increment: '増やす',
   },
   feedback: {
     recorded: '記録しました', saved: '保存しました', judgmentRecorded: '判定を記録しました',
