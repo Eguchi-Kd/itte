@@ -1,3 +1,4 @@
+import type { HabitDraft } from '../../domain/habits/validate';
 import type { ImmutableTable, Settings } from '../../domain/types';
 import { db } from '../db';
 import { updateSettings } from '../repo/common';
@@ -81,5 +82,23 @@ export function sampleRecords(): Record<ImmutableTable, Record<string, unknown>>
       createdAt: NOW,
     },
     goalFollowUps: { id: 'f1', goalId: 'g1', choice: 'KIZAMI', createdAt: NOW },
+  };
+}
+
+export function habitDraft(p: Partial<HabitDraft> = {}): HabitDraft {
+  return {
+    kind: 'build',
+    name: '英単語',
+    replacesText: null,
+    purpose: '',
+    unit: '分',
+    amount: 10,
+    minAmount: 2,
+    schedule: { days: [0, 1, 2, 3, 4, 5, 6], time: '07:00', cue: null },
+    place: '机',
+    how: '',
+    commitmentNote: null,
+    funNote: null,
+    ...p,
   };
 }
