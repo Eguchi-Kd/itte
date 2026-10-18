@@ -1,7 +1,7 @@
 # 進捗
 
 STATUS: IN_PROGRESS
-現在のタスク: T06
+現在のタスク: T07
 対象範囲: T01〜T12（M0 基盤＋M1 習慣。docs/SPEC.md §13）
 
 <!--
@@ -20,8 +20,8 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 - [x] T02 types / errors / dates / display とテスト | commit: ada87ff | AC: CORE-01, 02
 - [x] T03 Dexie スキーマ、不変性フック、台帳、シード、設定のリポジトリ | commit: 27da1de | AC: CORE-03, 04
 - [x] T04 copy/ja.ts、文言テスト、識別子テスト | commit: 76fb008 | AC: UX-05, 06
-- [x] T05 デザイントークン、共通コンポーネント、feedbackFor、音、振動、コマ | commit: | AC: UX-04, 09, 12
-- [ ] T06 習慣のドメイン関数とテスト | commit: | AC: HAB-01, 02, 05, 06, 09〜13
+- [x] T05 デザイントークン、共通コンポーネント、feedbackFor、音、振動、コマ | commit: dc4db6b | AC: UX-04, 09, 12
+- [x] T06 習慣のドメイン関数とテスト | commit: | AC: HAB-01, 02, 05, 06, 09〜13
 - [ ] T07 習慣のリポジトリとテスト | commit: | AC: HAB-03, 04, 14
 - [ ] T08 オンボーディングとリダイレクト | commit: | AC: CORE-06, 07
 - [ ] T09 習慣作成ウィザードとペルソナ別の差分 | commit: | AC: HAB-08
@@ -52,6 +52,7 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 
 新しいものを上に、1行ずつ書く。
 
+- 2026-10-19 T06 習慣のドメイン関数（予定日・統計・ガード・理由・傾向・自動化・レビュー・実行意図）とテスト（AC-HAB-01, 02, 05, 06, 09〜13）
 - 2026-10-19 T05 デザイントークン、共通コンポーネント、feedbackFor・音・振動、コマ、画面の形式の判定（AC-UX-04, 09, 12）
 - 2026-10-19 T04 copy/ja.ts（付録 A ＋画面の文言）、文言テスト、識別子テスト（AC-UX-05, 06）
 - 2026-10-19 T03 Dexie スキーマ、不変性フック、台帳（canonicalJSON・appendImmutable・verifyLedger）、シード、設定のリポジトリ（AC-CORE-03, 04）

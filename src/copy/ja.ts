@@ -200,8 +200,6 @@ export const ja = {
     keep: '続ける', reduce: '量を減らす', quit: 'やめる', quitNote: 'やめるのも判断です',
     patternLine: '{label}は {n}回中{done}回（全体 {overall}%）', counter: 'この条件への対策',
     bottleneck: 'いちばん多い見落とし: {label}', reviewEval: '評価関数を見直す',
-    prevMissed: '前の予定日が記録なしだった日',
-    weekdayLabel: '{day}曜日',
   },
   experiment: {
     phaseA: 'A（比較のための期間）', phaseB: 'B（すべての機能）',
