@@ -1,6 +1,6 @@
 # 進捗
 
-STATUS: IN_PROGRESS
+STATUS: BLOCKED
 現在のタスク: T08
 対象範囲: T01〜T12（M0 基盤＋M1 習慣。docs/SPEC.md §13）
 
@@ -47,6 +47,8 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 ## ブロック中の理由
 
 （STATUS: BLOCKED のときだけ書く。何が起きたか、試したこと、人に必要な操作）
+
+- 2026-10-19 T07 まで完了したところで、Claude Code の使用量の上限に達した。作業の中身で詰まったのではない。人に必要な操作: 使用量が戻ったら、STATUS を IN_PROGRESS に戻して T08 から再開させる
 
 ## 作業ログ
 
