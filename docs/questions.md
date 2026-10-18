@@ -48,3 +48,6 @@ Claude Code が実装中に追記する。形式:
 - [T12] 決めたこと: アイコンは scripts/gen-icons.mjs（Node 標準の zlib だけ）で public/icon-192.png、icon-512.png、apple-touch-icon.png（180px）を書き出した。図柄は theme_color の単色の背景にコマ（五角形と点の目2つ）で、maskable の安全域に収まるよう中央60%に置いた（関連: SPEC §10.2）
 - [T12] 決めたこと: ビルド成果物（マニフェスト、アイコン、CSP、Service Worker のプリキャッシュ）は tests/e2e/pwa.spec.ts で確かめる（関連: SPEC §10.2〜§10.4, §13 T12）
 - [T12] 決めたこと: Windows の Git Bash では `VITE_BASE=/itte/` が Windows のパスに書き換えられる（/Program Files/Git/itte/）。手元で確かめるときは `MSYS_NO_PATHCONV=1 VITE_BASE=/itte/ npm run build` とする。GitHub Actions（Linux）では起きない。既定値も /itte/ なので、ふだんは VITE_BASE を付けなくてよい（関連: SPEC §14）
+- [完了確認] 点検（サブエージェント）で弱いと指摘されたテストを強めた: AC-CORE-03（追記専用テーブルの一覧を9つに固定）、AC-CORE-05（今日まで予定日の定着済み・終了の習慣を道に出さない、optimist 以外では週の回数を付けない）、AC-HAB-10（予定日3日では提案しない）、AC-HAB-15（28日の窓の境界 9/20 と 9/21）、AC-UX-06（ファイル名も検査）
+- [完了確認] 未解決: AC-UX-09 の「バックアップの割り込みが出ない」は、バックアップのカード（割り込みカード5）を書き出し（T31）とあわせて作るまで、テストが必ず通る形になっている。カードを作るタスクで、タブ画面では出て、レッスン・タイマー・ウィザードでは出ないことを同じ条件で確かめるテストを足す（関連: SPEC §6.3.3, AC-UX-09）
+- [完了確認] 決めたこと: ホームの「今週 {done}/{scheduled} 回」（optimist）の分母は、その週の予定日すべて（今日と今週の残りの日を含む）。doneRatio と違い、週の予定の総数を示す表示なので今日を除かない（関連: SPEC §6.3.2, §6.5.2）

@@ -51,10 +51,20 @@ describe('buildTodayPath（習慣の部分）', () => {
     expect(buildTodayPath(input(), NOW)).toEqual({ interrupts: [], nodes: [], nextNodeId: null });
   });
 
+  it('AC-CORE-05: active でない習慣（今日まで予定日の定着済み・終了）は道に出さない', () => {
+    const graduated = habit({ id: 'grad', status: 'graduated', endedOn: TODAY, schedule: { days: [0], time: '06:00', cue: null } });
+    const ended = habit({ id: 'end', status: 'ended', endedOn: TODAY, schedule: { days: [0], time: null, cue: 'x' } });
+    const path = buildTodayPath(input({ habits: [...habits, graduated, ended] }), NOW);
+    expect(path.nodes.map((n) => n.habitId)).toEqual(['morning1', 'morning2', 'night', 'cueA', 'cueB']);
+  });
+
   it('AC-CORE-05: optimist のときだけ「今週 {done}/{scheduled} 回」を添える', () => {
     const h = [habit({ id: 'a', schedule: { days: [1, 3, 5, 0], time: null, cue: 'x' } })];
     const logs = [log('2026-10-12', true, { habitId: 'a' }), log('2026-10-14', true, { habitId: 'a' })];
     expect(buildTodayPath(input({ habits: h, habitLogs: logs }), NOW).nodes[0].weekCount).toBeNull();
+    for (const persona of ['regret', 'meaning', 'selfblame', 'notfun'] as const) {
+      expect(buildTodayPath(input({ habits: h, habitLogs: logs, persona }), NOW).nodes[0].weekCount).toBeNull();
+    }
     const opt = buildTodayPath(input({ habits: h, habitLogs: logs, persona: 'optimist' }), NOW);
     expect(opt.nodes[0].weekCount).toEqual({ done: 2, scheduled: 4 });
   });

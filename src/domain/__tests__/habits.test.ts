@@ -252,6 +252,8 @@ describe('ガード', () => {
     const sundays = daily({ schedule: { days: [0], time: null, cue: 'x' } });
     expect(levelUpSuggestion(sundays, [log('2026-10-11')], TODAY)).toBeNull(); // 予定日は 10/11 だけ（今日は記録なし）
     const four = daily({ schedule: { days: [0, 6], time: null, cue: 'x' } });
+    // 10/10・10/11・10/17 の3日（今日は記録なしで分母に入らない）。割合は 1.0 でも予定日が足りない
+    expect(levelUpSuggestion(four, [log('2026-10-10'), log('2026-10-11'), log('2026-10-17')], TODAY)).toBeNull();
     const logs = [log('2026-10-10'), log('2026-10-11'), log('2026-10-17'), log(TODAY)];
     expect(levelUpSuggestion(four, logs, TODAY)).toBe(12);
   });

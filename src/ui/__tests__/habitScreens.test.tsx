@@ -54,6 +54,20 @@ describe('習慣の詳細', () => {
     expect(within(detail).queryByRole('meter')).toBeNull();
   });
 
+  it('AC-HAB-15: 「28日間」は今日を含む28日（9/21〜10/18）だけを数え、累積量はそれより前も含む', async () => {
+    const h = await saveHabit(
+      habitDraft({ name: '散歩', unit: '分', amount: 10, schedule: { days: [0, 1], time: null, cue: '朝食のあと' } }),
+      NOW - 47 * DAY,
+    );
+    // 9/20（日）は窓の外、9/21（月）は窓の内側
+    await db.habitLogs.bulkAdd([log(h.id, '2026-09-20', 10), log(h.id, '2026-09-21', 10), log(h.id, '2026-10-12', 10)]);
+    renderAt(`/habits/${h.id}`);
+    const detail = await screen.findByTestId('habit-detail');
+    // 予定日: 月 9/21・9/28・10/5・10/12、日 9/27・10/4・10/11（今日 10/18 は記録なしなので分母に入れない）
+    expect(within(detail).getByTestId('ratio28')).toHaveTextContent('28日間で 2/7 回');
+    expect(within(detail).getByTestId('total')).toHaveTextContent('これまで合計 30分');
+  });
+
   it('記録なしの理由の内訳、月間カレンダー（予定日・記録済み・予定外の実行）を出す', async () => {
     const h = await seedHabit();
     renderAt(`/habits/${h.id}`);

@@ -39,7 +39,7 @@ describe('識別子', () => {
     const files = listFiles('src');
     expect(files.length).toBeGreaterThan(10);
     const bad = files
-      .map((f) => ({ file: f, found: findForbidden(readFileSync(f, 'utf8')) }))
+      .map((f) => ({ file: f, found: [...findForbidden(f), ...findForbidden(readFileSync(f, 'utf8'))] }))
       .filter((r) => r.found.length > 0);
     expect(bad).toEqual([]);
   });

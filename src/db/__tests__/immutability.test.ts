@@ -8,6 +8,22 @@ import { codeOfRejection, NOW, resetDb, sampleRecords } from './helpers';
 beforeEach(resetDb);
 
 describe('追記専用テーブルの不変性', () => {
+  it('AC-CORE-03: 追記専用テーブルは §7.4 の9つ', () => {
+    expect([...IMMUTABLE_TABLES].sort()).toEqual(
+      [
+        'measurements',
+        'predictions',
+        'affectActuals',
+        'commitments',
+        'judgmentRequests',
+        'judgments',
+        'judgmentCorrections',
+        'deadlineExtensions',
+        'goalFollowUps',
+      ].sort(),
+    );
+  });
+
   for (const table of IMMUTABLE_TABLES) {
     it(`AC-CORE-03: ${table} で update／put（既存キー）／delete が IMMUTABLE で失敗する`, async () => {
       const record = sampleRecords()[table];
