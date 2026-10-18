@@ -1,7 +1,7 @@
 # 進捗
 
 STATUS: IN_PROGRESS
-現在のタスク: T02
+現在のタスク: T03
 対象範囲: T01〜T12（M0 基盤＋M1 習慣。docs/SPEC.md §13）
 
 <!--
@@ -16,8 +16,8 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 
 各行の末尾に、完了時のコミットハッシュ（短縮形）と満たした受け入れ基準を書く。
 
-- [x] T01 プロジェクト作成、依存、TS strict、Tailwind、ルート、PWA、CSP、ESLint の層規則、Vitest、Playwright、scripts | commit: | AC: build
-- [ ] T02 types / errors / dates / display とテスト | commit: | AC: CORE-01, 02
+- [x] T01 プロジェクト作成、依存、TS strict、Tailwind、ルート、PWA、CSP、ESLint の層規則、Vitest、Playwright、scripts | commit: 4805f5b | AC: build
+- [x] T02 types / errors / dates / display とテスト | commit: | AC: CORE-01, 02
 - [ ] T03 Dexie スキーマ、不変性フック、台帳、シード、設定のリポジトリ | commit: | AC: CORE-03, 04
 - [ ] T04 copy/ja.ts、文言テスト、識別子テスト | commit: | AC: UX-05, 06
 - [ ] T05 デザイントークン、共通コンポーネント、feedbackFor、音、振動、コマ | commit: | AC: UX-04, 09, 12
@@ -52,4 +52,5 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 
 新しいものを上に、1行ずつ書く。
 
+- 2026-10-19 T02 types / errors / dates / display とテスト（AC-CORE-01, 02）
 - 2026-10-19 T01 雛形、依存、TS strict、Tailwind、全ルートの空画面、PWA（prompt）、CSP、ESLint の層規則、Vitest、Playwright。npm run build が通る
