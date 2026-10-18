@@ -6,9 +6,9 @@ import { AppLayout } from './ui/screens/AppLayout';
 const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
 const Onboarding = lazy(() => import('./ui/screens/onboarding/Onboarding'));
 const HabitWizard = lazy(() => import('./ui/screens/habits/HabitWizard'));
+const Home = lazy(() => import('./ui/screens/today/Home'));
 
 const placeholderPaths = [
-  '/',
   '/habits/:id',
   '/habits/:id/edit',
   '/tasks/new',
@@ -54,6 +54,7 @@ export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
+      { path: '/', element: <Home /> },
       { path: '/onboarding', element: <Onboarding /> },
       { path: '/habits/new', element: <HabitWizard /> },
       ...placeholderPaths.map((path) => ({ path, element: <Placeholder /> })),

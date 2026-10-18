@@ -1,7 +1,8 @@
-import { Suspense } from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router';
+import { Suspense, useState } from 'react';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router';
 import { ja } from '../../copy/ja';
 import { BottomNav } from '../components/BottomNav';
+import { QuickActionSheet } from '../components/QuickActionSheet';
 import { Snackbar } from '../components/Snackbar';
 import { FeedbackProvider } from '../feedback/FeedbackProvider';
 import { useSettings } from '../hooks/useSettings';
@@ -10,6 +11,8 @@ import { allowsInterruptions, showsBottomNav } from '../routePolicy';
 
 export function AppLayout() {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const [quickOpen, setQuickOpen] = useState(false);
   const settings = useSettings();
   const { needRefresh, update } = useUpdateState();
 
@@ -26,7 +29,15 @@ export function AppLayout() {
           <Outlet />
         </Suspense>
       </div>
-      {nav && <BottomNav onAdd={() => undefined} />}
+      {nav && <BottomNav onAdd={() => setQuickOpen(true)} />}
+      <QuickActionSheet
+        open={quickOpen}
+        onClose={() => setQuickOpen(false)}
+        onNavigate={(to) => {
+          setQuickOpen(false);
+          navigate(to);
+        }}
+      />
       {needRefresh && allowsInterruptions(pathname) && (
         <Snackbar text={ja.today.interrupt.update} actionLabel={ja.today.interrupt.updateAction} onAction={update} />
       )}
