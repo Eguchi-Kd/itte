@@ -5,10 +5,10 @@ import { AppLayout } from './ui/screens/AppLayout';
 // 画面はルートごとに遅延読み込みする（§6.1.2）。T13 以降のモジュールはまだ空の画面
 const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
 const Onboarding = lazy(() => import('./ui/screens/onboarding/Onboarding'));
+const HabitWizard = lazy(() => import('./ui/screens/habits/HabitWizard'));
 
 const placeholderPaths = [
   '/',
-  '/habits/new',
   '/habits/:id',
   '/habits/:id/edit',
   '/tasks/new',
@@ -55,6 +55,7 @@ export const routes: RouteObject[] = [
     element: <AppLayout />,
     children: [
       { path: '/onboarding', element: <Onboarding /> },
+      { path: '/habits/new', element: <HabitWizard /> },
       ...placeholderPaths.map((path) => ({ path, element: <Placeholder /> })),
       { path: '*', element: <Placeholder /> },
     ],

@@ -102,3 +102,6 @@ export function habitDraft(p: Partial<HabitDraft> = {}): HabitDraft {
     ...p,
   };
 }
+
+/** 画面のテストから DB の中身を確かめるための入口（画面のコードからは使わない） */
+export { db as testDb };
