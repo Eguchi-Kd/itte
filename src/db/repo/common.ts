@@ -31,3 +31,12 @@ export async function recordAppOpen(now: EpochMs): Promise<void> {
     if (!(await db.appOpens.get(date))) await db.appOpens.add({ date, firstAt: now });
   });
 }
+
+/** オンボーディングを終える。診断をとばしたときは persona=null（§6.4） */
+export async function completeOnboarding(
+  scores: Settings['personaScores'],
+  persona: Settings['persona'],
+  now: EpochMs,
+): Promise<Settings> {
+  return updateSettings({ onboarded: true, persona, personaScores: scores }, now);
+}

@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Outlet, useLocation } from 'react-router';
+import { Navigate, Outlet, useLocation } from 'react-router';
 import { ja } from '../../copy/ja';
 import { BottomNav } from '../components/BottomNav';
 import { Snackbar } from '../components/Snackbar';
@@ -15,6 +15,8 @@ export function AppLayout() {
 
   // 設定（初期データ）ができるまでは何も描かない
   if (!settings) return null;
+  // 未オンボーディングの間は、どのルートもオンボーディングへ（§6.1.2）
+  if (!settings.onboarded && pathname !== '/onboarding') return <Navigate to="/onboarding" replace />;
 
   const nav = showsBottomNav(pathname);
   return (

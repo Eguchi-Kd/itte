@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 4173;
+// 4173 は他のアプリと衝突しやすいので避ける。別のサーバーを誤って使わないよう、既存のサーバーは使い回さない
+const PORT = 4319;
 const BASE = process.env.VITE_BASE ?? '/itte/';
 
 export default defineConfig({
@@ -14,6 +15,7 @@ export default defineConfig({
     timezoneId: 'Asia/Tokyo',
     locale: 'ja-JP',
     trace: 'retain-on-failure',
+    serviceWorkers: 'block',
   },
   projects: [
     {
@@ -29,7 +31,7 @@ export default defineConfig({
   webServer: {
     command: `npm run preview -- --port ${PORT} --strictPort`,
     url: `http://localhost:${PORT}${BASE}`,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });
