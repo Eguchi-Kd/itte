@@ -76,6 +76,8 @@ test('AC-UX-01: ホームを開いた状態から、習慣の記録が1回のタ
   const t = tapper();
   await t.tap(page.getByRole('button', { name: '英単語をやったと記録する' }));
   expect(t.count).toBe(1);
+  await expect(page.locator('[data-testid^="habit-node-"]')).toHaveAttribute('data-state', 'done');
+  await expect(page.getByTestId('snackbar')).toContainText('記録しました');
   await page.reload();
   await expect(page.locator('[data-testid^="habit-node-"]')).toHaveAttribute('data-state', 'done');
 });

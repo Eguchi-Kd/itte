@@ -11,7 +11,7 @@ export const ja = {
     leaveTitle: 'やめると入力は消えます', leaveStay: '続ける', leaveGo: 'やめる',
     insufficient: '—（{n}件）', recorded: '記録済み', missing: '記録なし',
     back: '戻る', settings: '設定', step: 'ステップ {n}/{total}', loading: '読み込み中',
-    menu: 'メニュー', optional: '（なくてもよい）', select: '選ぶ', decrement: '減らす', increment: '増やす',
+    menu: 'メニュー', optional: '（なくてもよい）', select: '選ぶ', decrement: '減らす', increment: '増やす', separator: '・',
   },
   feedback: {
     recorded: '記録しました', saved: '保存しました', judgmentRecorded: '判定を記録しました',

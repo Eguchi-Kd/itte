@@ -7,10 +7,12 @@ const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
 const Onboarding = lazy(() => import('./ui/screens/onboarding/Onboarding'));
 const HabitWizard = lazy(() => import('./ui/screens/habits/HabitWizard'));
 const Home = lazy(() => import('./ui/screens/today/Home'));
+const HabitDetail = lazy(() => import('./ui/screens/habits/HabitDetail'));
+const HabitEdit = lazy(() => import('./ui/screens/habits/HabitEdit'));
+const HabitList = lazy(() => import('./ui/screens/habits/HabitList'));
+const Library = lazy(() => import('./ui/screens/library/Library'));
 
 const placeholderPaths = [
-  '/habits/:id',
-  '/habits/:id/edit',
   '/tasks/new',
   '/tasks/:id',
   '/session/:id',
@@ -38,8 +40,6 @@ const placeholderPaths = [
   '/review/calibration',
   '/review/patterns',
   '/review/experiment',
-  '/library',
-  '/library/habits',
   '/library/tasks',
   '/library/goals',
   '/library/metrics',
@@ -57,6 +57,10 @@ export const routes: RouteObject[] = [
       { path: '/', element: <Home /> },
       { path: '/onboarding', element: <Onboarding /> },
       { path: '/habits/new', element: <HabitWizard /> },
+      { path: '/habits/:id', element: <HabitDetail /> },
+      { path: '/habits/:id/edit', element: <HabitEdit /> },
+      { path: '/library', element: <Library /> },
+      { path: '/library/habits', element: <HabitList /> },
       ...placeholderPaths.map((path) => ({ path, element: <Placeholder /> })),
       { path: '*', element: <Placeholder /> },
     ],
