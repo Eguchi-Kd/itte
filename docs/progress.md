@@ -1,7 +1,7 @@
 # 進捗
 
 STATUS: IN_PROGRESS
-現在のタスク: T12
+現在のタスク: 完了の定義の確認
 対象範囲: T01〜T12（M0 基盤＋M1 習慣。docs/SPEC.md §13）
 
 <!--
@@ -26,8 +26,8 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 - [x] T08 オンボーディングとリダイレクト | commit: ebf42db | AC: CORE-06, 07
 - [x] T09 習慣作成ウィザードとペルソナ別の差分 | commit: b92591b | AC: HAB-08
 - [x] T10 きょうの道（習慣）、ホーム、理由カード、取り消し、過去の記録、＋シート | commit: abfbc21 | AC: CORE-05（習慣部分）, HAB-07, UX-01, 03
-- [x] T11 習慣の詳細・一覧・編集、グラフ、カレンダー、.ics | commit: | AC: HAB-15, 16
-- [ ] T12 アイコン、マニフェスト、デプロイ用ワークフロー | commit: | AC: ビルド成果物の確認
+- [x] T11 習慣の詳細・一覧・編集、グラフ、カレンダー、.ics | commit: bef8ecd | AC: HAB-15, 16
+- [x] T12 アイコン、マニフェスト、デプロイ用ワークフロー | commit: | AC: ビルド成果物の確認
 
 ## 完了の定義
 
@@ -42,6 +42,9 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 
 - AC-UX-14: iPhone の Safari と Android の Chrome で、ホーム画面に追加して単体起動できる
 - GitHub にリポジトリ `itte` を作り、push して、Settings → Pages の Source を GitHub Actions にする
+- ホーム画面に追加したアイコン（コマ）の見え方を、iPhone と Android の両方で確かめる（図柄は scripts/gen-icons.mjs で作った仮のもの）
+- push 後の GitHub Actions で `npm ci`（Node 22）から lint・型・テスト・ビルドまで通り、https://eguchi-kd.github.io/itte/ が開ける。リポジトリ名を変える場合は、ワークフローの build に `VITE_BASE=/<名前>/` を足す
+- 手元で E2E を動かすとき、ポート 4319 が空いている（4173 は別のアプリが使っていたので避けた）
 - （実装中に増えたら追記する）
 
 ## ブロック中の理由
@@ -52,6 +55,7 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 
 新しいものを上に、1行ずつ書く。
 
+- 2026-10-19 T12 アイコン（Node 標準の zlib で PNG を書き出すスクリプト）、マニフェスト、GitHub Pages のワークフロー、ビルド成果物の E2E。VITE_BASE=/itte/ のビルドとプレビューで表示を確認
 - 2026-10-19 T11 習慣の詳細（累積量・28日間・週グラフ・月カレンダー・量を上げる提案・理由の内訳）、一覧、編集、記録庫、習慣の .ics（AC-HAB-15, 16）
 - 2026-10-19 T10 buildTodayPath（習慣）、ホーム、理由カード、取り消し、過去の記録を直すシート、＋シート、E2E の通しシナリオ（AC-CORE-05 習慣部分, AC-HAB-07, AC-UX-01, 03）
 - 2026-10-19 T09 習慣作成ウィザード（4ステップ、小さく始めるガード、実行意図の確認）とペルソナ別の差分（AC-HAB-08）

@@ -45,3 +45,6 @@ Claude Code が実装中に追記する。形式:
 - [T11] 決めたこと: 自動化スコアの推移は、週次チェック（T28）ができるまでデータがないので、チェックが1件以上あるときだけ週ごとの平均の並びを出す。折れ線グラフは T28 で週次チェックと合わせて作る（関連: SPEC §6.5.3-7）
 - [T11] 決めたこと: 記録庫（#/library）は M1 では「習慣」の入口と設定のアイコンだけを置く。ほかの一覧は各モジュールのタスクで足す（関連: SPEC §6.11）
 - [T11] 決めたこと: 画面のテストは遅延読み込みの初回の読み込みを待つため、Testing Library の待ち時間を4秒にした（関連: SPEC §6.1.2）
+- [T12] 決めたこと: アイコンは scripts/gen-icons.mjs（Node 標準の zlib だけ）で public/icon-192.png、icon-512.png、apple-touch-icon.png（180px）を書き出した。図柄は theme_color の単色の背景にコマ（五角形と点の目2つ）で、maskable の安全域に収まるよう中央60%に置いた（関連: SPEC §10.2）
+- [T12] 決めたこと: ビルド成果物（マニフェスト、アイコン、CSP、Service Worker のプリキャッシュ）は tests/e2e/pwa.spec.ts で確かめる（関連: SPEC §10.2〜§10.4, §13 T12）
+- [T12] 決めたこと: Windows の Git Bash では `VITE_BASE=/itte/` が Windows のパスに書き換えられる（/Program Files/Git/itte/）。手元で確かめるときは `MSYS_NO_PATHCONV=1 VITE_BASE=/itte/ npm run build` とする。GitHub Actions（Linux）では起きない。既定値も /itte/ なので、ふだんは VITE_BASE を付けなくてよい（関連: SPEC §14）
