@@ -27,11 +27,10 @@ export function defaultSettings(now: EpochMs): Settings {
   };
 }
 
-/** 設定がなければ既定値と初期データを入れる。2回目以降は何もしない */
+/** 設定・理由タグ・定跡がなければ、それぞれ既定値と初期データを入れる。あるものはそのまま */
 export async function ensureSeed(now: EpochMs, d: ItteDB = defaultDb): Promise<void> {
   await d.transaction('rw', [d.settings, d.reasonTags, d.joseki], async () => {
-    if (await d.settings.get('singleton')) return;
-    await d.settings.add(defaultSettings(now));
+    if (!(await d.settings.get('singleton'))) await d.settings.add(defaultSettings(now));
     if ((await d.reasonTags.count()) === 0) {
       const tags: ReasonTag[] = INITIAL_REASON_TAGS.map((label, order) => ({
         id: crypto.randomUUID(),

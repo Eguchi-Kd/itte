@@ -57,6 +57,10 @@ export interface PathInput {
   startUsed: boolean;
   /** 今日の 1日のしめ（DailyCheck）がある */
   dailyDone: boolean;
+  /** 起動後の台帳の検証に失敗した（割り込みカード4） */
+  integrityFailed: boolean;
+  /** バックアップを促す条件（割り込みカード5、backupDue） */
+  backupDue: boolean;
   /** 割り込みカード ID → 「あとで」を押した論理日 */
   dismissed: Record<string, LocalDate>;
 }
@@ -126,7 +130,9 @@ export type InterruptCardId = 'resume' | 'reason' | 'carry' | 'integrity' | 'bac
 export type InterruptCard =
   | { id: 'resume'; sessionId: ID; startedAt: EpochMs; remainingMs: number }
   | { id: 'reason'; prompts: ReasonPrompt[] }
-  | { id: 'carry'; tasks: Task[] };
+  | { id: 'carry'; tasks: Task[] }
+  | { id: 'integrity' }
+  | { id: 'backup' };
 
 /** §6.3.3 の優先順 */
 export const INTERRUPT_PRIORITY: readonly InterruptCardId[] = ['resume', 'reason', 'carry', 'integrity', 'backup', 'install'];
@@ -183,6 +189,8 @@ export function buildTodayPath(input: PathInput, now: EpochMs): TodayPath {
   if (prompts.length > 0 && !isDismissed(input.dismissed, 'reason', today)) candidates.push({ id: 'reason', prompts });
   const carry = carryOverCandidates(tasks, today);
   if (carry.length > 0 && !isDismissed(input.dismissed, 'carry', today)) candidates.push({ id: 'carry', tasks: carry });
+  if (input.integrityFailed && !isDismissed(input.dismissed, 'integrity', today)) candidates.push({ id: 'integrity' });
+  if (input.backupDue && !isDismissed(input.dismissed, 'backup', today)) candidates.push({ id: 'backup' });
   const interrupts = candidates
     .sort((a, b) => INTERRUPT_PRIORITY.indexOf(a.id) - INTERRUPT_PRIORITY.indexOf(b.id))
     .slice(0, MAX_INTERRUPTS);

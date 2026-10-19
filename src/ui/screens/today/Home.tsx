@@ -10,6 +10,9 @@ import { carryOverTask, closeTask } from '../../../db/repo/start';
 import { logicalDate } from '../../../domain/dates';
 import { formatDateShort } from '../../../domain/display';
 import { buildTodayPath, unscheduledHabits } from '../../../domain/path';
+import { backupDue } from '../../../domain/backup';
+import { useLaunch } from '../../hooks/launchContext';
+import { InterruptCard } from '../../components/InterruptCard';
 import type { Habit, LocalDate } from '../../../domain/types';
 import { BottomSheet } from '../../components/BottomSheet';
 import { Button } from '../../components/Button';
@@ -44,6 +47,7 @@ export default function Home() {
   const actions = useHabitActions();
   const flags = useFlags();
   const startTask = useStartTask();
+  const { integrityFailed } = useLaunch();
   const [amountFor, setAmountFor] = useState<Habit | null>(null);
   const [pastOpen, setPastOpen] = useState(false);
   const [entryOpen, setEntryOpen] = useState(false);
@@ -65,6 +69,8 @@ export default function Home() {
       moves: data.moves,
       candidates: data.candidates,
       startUsed: data.startUsed,
+      integrityFailed: integrityFailed ?? false,
+      backupDue: backupDue(settings.lastExportAt, data.hasRecords, now),
       dailyDone: data.dailyDone,
       dismissed: settings.dismissed,
     },
@@ -95,6 +101,20 @@ export default function Home() {
       {path.interrupts.map((card) =>
         card.id === 'resume' ? (
           <ResumeCard key={card.id} sessionId={card.sessionId} startedAt={card.startedAt} />
+        ) : card.id === 'integrity' ? (
+          <InterruptCard key={card.id} onLater={() => dismiss('integrity')} testId="integrity-card">
+            <p className="pr-14 text-body">{ja.today.interrupt.integrity}</p>
+            <Button className="mt-3" variant="secondary" onClick={() => navigate('/settings/data')}>
+              {ja.settings.integrityCheck}
+            </Button>
+          </InterruptCard>
+        ) : card.id === 'backup' ? (
+          <InterruptCard key={card.id} onLater={() => dismiss('backup')} testId="backup-card">
+            <p className="pr-14 text-body">{ja.today.interrupt.backup}</p>
+            <Button className="mt-3" onClick={() => navigate('/settings/data')}>
+              {ja.today.interrupt.backupAction}
+            </Button>
+          </InterruptCard>
         ) : card.id === 'reason' ? (
           <ReasonCard
             key={card.id}

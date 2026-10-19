@@ -2,6 +2,7 @@
 import { MAX_ACTIVE_TRIGGERS, MAX_AVOID, periodsOverlap } from '../../domain/board/board';
 import { filledCandidates, validateCandidates, type CandidateInput } from '../../domain/board/moves';
 import { DomainError } from '../../domain/errors';
+import { parseIcs } from '../../domain/ics';
 import type {
   BoardItem,
   BoardItemType,
@@ -279,5 +280,31 @@ export async function saveMoveReview(input: MoveReviewInput, now: EpochMs): Prom
     const principle = opt(input.promoteToJoseki ?? null);
     if (principle) await saveJoseki({ principle, moveReviewId: review.id }, now);
     return review;
+  });
+}
+
+/** .ics を盤面に予定として取り込む（§10.7）。externalUid が同じ予定は飛ばす。取り込んだ件数を返す */
+export async function importIcs(text: string, today: LocalDate, now: EpochMs): Promise<number> {
+  const events = parseIcs(text, today);
+  return db.transaction('rw', db.boardItems, async () => {
+    const existing = new Set((await db.boardItems.toArray()).map((i) => i.externalUid).filter((x): x is string => x !== null));
+    let added = 0;
+    for (const e of events) {
+      if (existing.has(e.uid)) continue;
+      const title = (e.summary.trim() || e.uid).slice(0, 200);
+      await db.boardItems.add({
+        id: newId(),
+        type: 'event',
+        title,
+        dueDate: e.date,
+        status: 'open',
+        source: 'ics',
+        externalUid: e.uid,
+        createdAt: now,
+      });
+      existing.add(e.uid);
+      added += 1;
+    }
+    return added;
   });
 }

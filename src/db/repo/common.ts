@@ -4,7 +4,7 @@ import { DomainError } from '../../domain/errors';
 import { runningExperiment } from '../../domain/experiment';
 import type { EpochMs, Experiment, ExperimentPreset, LocalDate, Settings, WeeklyReviewRun } from '../../domain/types';
 import { db } from '../db';
-import { defaultSettings } from '../seed';
+import { defaultSettings, ensureSeed } from '../seed';
 
 /** 設定を読む。初回は既定値で作る */
 export async function getSettings(now: EpochMs): Promise<Settings> {
@@ -82,4 +82,12 @@ export async function stopExperiment(id: string, now: EpochMs): Promise<void> {
     const e = await db.experiments.get(id);
     if (e && e.stoppedAt === null) await db.experiments.update(id, { stoppedAt: now });
   });
+}
+
+// 書き出し・読み込み・全削除（§7.6 の共通の関数。実装は db/backup.ts）
+export { exportCsvZip, exportJson, importJson, validateImport, wipeAll, type ImportSummary } from '../backup';
+
+/** 全データ削除のあと、オンボーディングから始められるよう設定と初期データを入れ直す */
+export async function startFresh(now: EpochMs): Promise<void> {
+  await ensureSeed(now);
 }

@@ -2,7 +2,7 @@
 import { addDays, parseLocalDate } from './dates';
 import { formatIntention } from './habits/formatIntention';
 import { isScheduled } from './habits/schedule';
-import type { EpochMs, Habit } from './types';
+import type { EpochMs, Goal, Habit, Settings } from './types';
 import { ICS_DEFAULT_DURATION_MIN } from './verify/thresholds';
 
 const CRLF = '\r\n';
@@ -83,4 +83,115 @@ export function habitEvent(habit: Habit): string[] | null {
 export function exportHabitIcs(habit: Habit): string | null {
   const e = habitEvent(habit);
   return e ? wrapCalendar([e]) : null;
+}
+
+function stampDate(d: string): string {
+  return d.replace(/-/g, '');
+}
+
+/** 週次ふりかえりの曜日と時刻に、毎週の VEVENT（タイトルは呼び出し側が渡す） */
+export function weeklyReviewEvent(settings: Pick<Settings, 'weeklyReviewIcs' | 'createdAt'>, today: string, title: string): string[] {
+  const { weekday, time } = settings.weeklyReviewIcs;
+  let first = today;
+  for (let i = 0; i < 7 && parseLocalDate(first).getDay() !== weekday; i++) first = addDays(first, 1);
+  return [
+    'BEGIN:VEVENT',
+    'UID:weekly-review@itte',
+    `DTSTAMP:${utcStamp(settings.createdAt)}`,
+    `DTSTART:${floating(first, time)}`,
+    `DTEND:${floating(first, time, ICS_DEFAULT_DURATION_MIN)}`,
+    `RRULE:FREQ=WEEKLY;BYDAY=${BYDAY[weekday]}`,
+    `SUMMARY:${escapeText(title)}`,
+    'END:VEVENT',
+  ];
+}
+
+export function exportWeeklyReviewIcs(settings: Pick<Settings, 'weeklyReviewIcs' | 'createdAt'>, today: string, title: string): string {
+  return wrapCalendar([weeklyReviewEvent(settings, today, title)]);
+}
+
+/** OPEN の段の期限を、終日の VEVENT（DTSTART;VALUE=DATE）で */
+export function goalDeadlineEvents(goals: readonly Goal[]): string[][] {
+  return goals
+    .filter((g) => g.status === 'OPEN')
+    .map((g) => [
+      'BEGIN:VEVENT',
+      `UID:${g.id}@itte`,
+      `DTSTAMP:${utcStamp(g.createdAt)}`,
+      `DTSTART;VALUE=DATE:${stampDate(g.deadline)}`,
+      `DTEND;VALUE=DATE:${stampDate(addDays(g.deadline, 1))}`,
+      `SUMMARY:${escapeText(g.title)}`,
+      'END:VEVENT',
+    ]);
+}
+
+export function exportGoalDeadlinesIcs(goals: readonly Goal[]): string {
+  return wrapCalendar(goalDeadlineEvents(goals));
+}
+
+/** 習慣の時刻・週次ふりかえり・段の期限をまとめた .ics（設定画面のまとめ書き出し） */
+export function exportAllIcs(
+  habits: readonly Habit[],
+  goals: readonly Goal[],
+  settings: Pick<Settings, 'weeklyReviewIcs' | 'createdAt'>,
+  today: string,
+  weeklyTitle: string,
+): string {
+  const habitEvents = habits.filter((h) => h.status === 'active').map(habitEvent).filter((e): e is string[] => e !== null);
+  return wrapCalendar([...habitEvents, weeklyReviewEvent(settings, today, weeklyTitle), ...goalDeadlineEvents(goals)]);
+}
+
+// ===== 読み込み（§8.12.2） =====
+
+export interface IcsEvent {
+  uid: string;
+  summary: string;
+  date: string;
+}
+
+function unescapeText(s: string): string {
+  return s.replace(/\\n/gi, '\n').replace(/\\([,;\\])/g, '$1');
+}
+
+/** 'YYYYMMDD' または 'YYYYMMDDTHHMMSS[Z]' → 暦の日付（Z つきは UTC をローカルに直す） */
+function icsDate(value: string): string | null {
+  const m = /^(\d{4})(\d{2})(\d{2})(?:T(\d{2})(\d{2})(\d{2})(Z)?)?$/.exec(value.trim());
+  if (!m) return null;
+  const [, y, mo, d, h, mi, s, z] = m;
+  if (z) {
+    const local = new Date(Date.UTC(Number(y), Number(mo) - 1, Number(d), Number(h), Number(mi), Number(s)));
+    return `${local.getFullYear()}-${String(local.getMonth() + 1).padStart(2, '0')}-${String(local.getDate()).padStart(2, '0')}`;
+  }
+  return `${y}-${mo}-${d}`;
+}
+
+/**
+ * 行の折り返しを戻し、VEVENT の UID・SUMMARY・DTSTART（DATE と DATE-TIME）を読む。
+ * today〜today+60 に始まる予定だけを返す。RRULE は展開しない。UID が重なれば最初の1件だけ
+ */
+export function parseIcs(text: string, today: string): IcsEvent[] {
+  const lines = text.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '').split(/\r?\n/);
+  const out: IcsEvent[] = [];
+  const seen = new Set<string>();
+  const last = addDays(today, 60);
+  let cur: Partial<IcsEvent> | null = null;
+  for (const line of lines) {
+    if (line === 'BEGIN:VEVENT') cur = {};
+    else if (line === 'END:VEVENT') {
+      if (cur?.uid && cur.date && !seen.has(cur.uid) && cur.date >= today && cur.date <= last) {
+        seen.add(cur.uid);
+        out.push({ uid: cur.uid, summary: cur.summary ?? '', date: cur.date });
+      }
+      cur = null;
+    } else if (cur) {
+      const idx = line.indexOf(':');
+      if (idx < 0) continue;
+      const name = line.slice(0, idx).split(';')[0].toUpperCase();
+      const value = line.slice(idx + 1);
+      if (name === 'UID') cur.uid = value.trim();
+      else if (name === 'SUMMARY') cur.summary = unescapeText(value);
+      else if (name === 'DTSTART') cur.date = icsDate(value) ?? undefined;
+    }
+  }
+  return out;
 }

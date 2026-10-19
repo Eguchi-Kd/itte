@@ -1,9 +1,10 @@
 import { lazy } from 'react';
-import type { RouteObject } from 'react-router';
+import { Navigate, type RouteObject } from 'react-router';
 import { AppLayout } from './ui/screens/AppLayout';
 
-// 画面はルートごとに遅延読み込みする（§6.1.2）。T13 以降のモジュールはまだ空の画面
-const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
+// 画面はルートごとに遅延読み込みする（§6.1.2）
+const DataSettings = lazy(() => import('./ui/screens/settings/DataSettings'));
+const Settings = lazy(() => import('./ui/screens/settings/Settings'));
 const ExperimentScreen = lazy(() => import('./ui/screens/review/ExperimentScreen'));
 const Numbers = lazy(() => import('./ui/screens/review/Numbers'));
 const Patterns = lazy(() => import('./ui/screens/review/Patterns'));
@@ -45,15 +46,12 @@ const HabitEdit = lazy(() => import('./ui/screens/habits/HabitEdit'));
 const HabitList = lazy(() => import('./ui/screens/habits/HabitList'));
 const Library = lazy(() => import('./ui/screens/library/Library'));
 
-const placeholderPaths = [
-  '/settings',
-  '/settings/data',
-];
-
 export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
+      { path: '/settings/data', element: <DataSettings /> },
+      { path: '/settings', element: <Settings /> },
       { path: '/review/experiment', element: <ExperimentScreen /> },
       { path: '/review/numbers', element: <Numbers /> },
       { path: '/review/patterns', element: <Patterns /> },
@@ -94,8 +92,8 @@ export const routes: RouteObject[] = [
       { path: '/habits/:id/edit', element: <HabitEdit /> },
       { path: '/library', element: <Library /> },
       { path: '/library/habits', element: <HabitList /> },
-      ...placeholderPaths.map((path) => ({ path, element: <Placeholder /> })),
-      { path: '*', element: <Placeholder /> },
+      // 知らないパスはホームへ
+      { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
 ];

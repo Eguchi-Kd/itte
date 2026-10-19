@@ -1,4 +1,4 @@
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router';
 import { ja } from '../../copy/ja';
 import { BottomNav } from '../components/BottomNav';
@@ -9,6 +9,7 @@ import { FeedbackProvider } from '../feedback/FeedbackProvider';
 import { SettingsContext, useSettingsQuery } from '../hooks/useSettings';
 import { useUpdateState } from '../hooks/updateContext';
 import { useLaunch } from '../hooks/launchContext';
+import { getSettings } from '../../db/repo/common';
 import { FlagsContext, useFlagsQuery } from '../hooks/useFlags';
 import { EscapeForm } from './start/EscapeForm';
 import { StartTaskProvider } from './start/StartTaskProvider';
@@ -22,6 +23,11 @@ export function AppLayout() {
   const { needRefresh, update } = useUpdateState();
   const { escapeSessionId, clearEscape } = useLaunch();
   const flags = useFlagsQuery();
+
+  // 設定がまだない（初回や全削除の直後）なら既定値で作る
+  useEffect(() => {
+    if (settings === null) void getSettings(Date.now());
+  }, [settings]);
 
   // 設定（初期データ）と機能フラグができるまでは何も描かない
   if (!settings || !flags) return null;

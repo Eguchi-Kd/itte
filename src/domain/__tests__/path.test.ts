@@ -33,6 +33,8 @@ function input(p: Partial<PathInput> = {}): PathInput {
     // 既定では今週のふりかえりは済んでいる（週次のノードは専用のテストで確かめる）
     weeklyRuns: [{ id: 'w', weekStart: '2026-10-12', startedAt: 0, completedAt: 1, cursor: 9 }],
     startUsed: false,
+    integrityFailed: false,
+    backupDue: false,
     dailyDone: false,
     dismissed: {},
     ...p,
@@ -315,5 +317,15 @@ describe('週次ふりかえり', () => {
   it('AC-CORE-05: 週次ふりかえりはやることの後、しめの前', () => {
     const p = buildTodayPath(input({ weeklyRuns: [], tasks: [task()], startUsed: true }), NOW);
     expect(p.nodes.map((n) => n.kind)).toEqual(['task', 'weekly', 'daily']);
+  });
+});
+
+describe('割り込みカード（整合性・バックアップ）', () => {
+  it('優先順は 記録なしの理由 → 持ち越し → 整合性 → バックアップ で、最大2枚。あとでを押した日は出さない', () => {
+    const p1 = build(input({ integrityFailed: true, backupDue: true }), NOW);
+    expect(p1.interrupts.map((c) => c.id)).toEqual(['integrity', 'backup']);
+    const h = [habit({ id: 'p', startedOn: '2026-10-16' })];
+    expect(build(input({ habits: h, integrityFailed: true, backupDue: true }), NOW).interrupts.map((c) => c.id)).toEqual(['reason', 'integrity']);
+    expect(build(input({ backupDue: true, dismissed: { backup: TODAY } }), NOW).interrupts).toEqual([]);
   });
 });

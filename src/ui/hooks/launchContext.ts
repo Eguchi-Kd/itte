@@ -5,6 +5,8 @@ export interface LaunchState {
   /** 起動時に放置として閉じたセッションのうち、逃避ログを促すもの（最も新しい1件） */
   escapeSessionId: ID | null;
   clearEscape: () => void;
+  /** 起動後のアイドル時に台帳を検証して、失敗した */
+  integrityFailed?: boolean;
 }
 
 export const LaunchContext = createContext<LaunchState>({ escapeSessionId: null, clearEscape: () => undefined });
