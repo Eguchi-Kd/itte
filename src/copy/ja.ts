@@ -147,6 +147,20 @@ export const ja = {
     consumeQ: '今日、動画・SNS・ゲームに使った時間は?', consumeHint: 'スクリーンタイムの数字を写す',
     plannedQ: '今日、予定していたやることはあった?',
     close: '片づける', closeDone: '済んだ', closeDrop: 'やめた',
+    field: {
+      title: 'やること', rough: '雑な版', first: '最初の動作', next: '次の一手', planned: '予定日',
+      goal: '段', goalOptional: '段（なくてもよい）', boardItem: '盤面の項目', plannedDate: '日付を選ぶ',
+    },
+    today: '今日', tomorrow: '明日',
+    startLabel: '{label}を始める',
+    detail: {
+      sessions: 'セッション', stucks: '詰まり', noSessions: 'まだセッションはありません',
+      sessionRow: '{date} {time} {n}分 {outcome}', stuckRow: '{date} {blocker}（{choice}）',
+      closeQ: '片づける理由', closed: '片づけ済み（{reason}）', notFound: 'このやることは見つかりません',
+      edit: '編集', save: '保存', moveToday: '今日に移す',
+    },
+    outcome: { continued: '続けた', stopped: '止めた', abandoned: '途中で止まった', running: '進行中' },
+    list: { title: 'やること', planned: '予定', closed: '片づけ済み', empty: 'この区分のやることはありません', add: '新しいやること' },
   },
   board: {
     evalQ: '評価関数', evalHint: '週単位で測れる形になっていますか。例: 週に書いた章数、週の睡眠時間',

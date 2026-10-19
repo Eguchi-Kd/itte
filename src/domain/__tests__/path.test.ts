@@ -1,8 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { buildTodayPath, DEFAULT_PATH_FLAGS, MAX_INTERRUPTS, unscheduledHabits, type PathInput } from '../path';
 import { habit, log, TODAY } from './habitFixtures';
+import { session, task } from './startFixtures';
 
 const NOW = new Date(2026, 9, 18, 12, 0).getTime();
+
+function weekOf(p: ReturnType<typeof buildTodayPath>) {
+  const n = p.nodes[0];
+  return n.kind === 'habit' ? n.weekCount : undefined;
+}
 
 function input(p: Partial<PathInput> = {}): PathInput {
   return {
@@ -11,6 +17,8 @@ function input(p: Partial<PathInput> = {}): PathInput {
     flags: DEFAULT_PATH_FLAGS,
     habits: [],
     habitLogs: [],
+    tasks: [],
+    sessions: [],
     dismissed: {},
     ...p,
   };
@@ -30,7 +38,7 @@ const habits = [
 describe('buildTodayPath（習慣の部分）', () => {
   it('AC-CORE-05: 時刻つきの習慣を時刻順、続いて時刻なしを createdAt 順に並べる', () => {
     const path = buildTodayPath(input({ habits }), NOW);
-    expect(path.nodes.map((n) => n.habitId)).toEqual(['morning1', 'morning2', 'night', 'cueA', 'cueB']);
+    expect(path.nodes.map((n) => (n.kind === 'habit' ? n.habitId : n.id))).toEqual(['morning1', 'morning2', 'night', 'cueA', 'cueB']);
     expect(path.nodes.every((n) => n.kind === 'habit')).toBe(true);
   });
 
@@ -39,8 +47,9 @@ describe('buildTodayPath（習慣の部分）', () => {
     const path = buildTodayPath(input({ habits, habitLogs: logs }), NOW);
     expect(path.nextNodeId).toBe('habit:morning2'); // 記録なし（done=false）は完了ではない
     expect(path.nodes.map((n) => n.state)).toEqual(['done', 'next', 'todo', 'todo', 'todo']);
-    expect(path.nodes[0].recordedAmount).toBe(12);
-    expect(path.nodes[1].recordedAmount).toBeNull();
+    const [first, second] = path.nodes;
+    expect(first.kind === 'habit' && first.recordedAmount).toBe(12);
+    expect(second.kind === 'habit' && second.recordedAmount).toBeNull();
   });
 
   it('AC-CORE-05: すべて完了していれば nextNodeId は null。予定がなければノードもない', () => {
@@ -48,25 +57,25 @@ describe('buildTodayPath（習慣の部分）', () => {
     const path = buildTodayPath(input({ habits, habitLogs: logs }), NOW);
     expect(path.nextNodeId).toBeNull();
     expect(path.nodes.every((n) => n.state === 'done')).toBe(true);
-    expect(buildTodayPath(input(), NOW)).toEqual({ interrupts: [], nodes: [], nextNodeId: null });
+    expect(buildTodayPath(input(), NOW)).toEqual({ interrupts: [], nodes: [], nextNodeId: null, otherTasks: [] });
   });
 
   it('AC-CORE-05: active でない習慣（今日まで予定日の定着済み・終了）は道に出さない', () => {
     const graduated = habit({ id: 'grad', status: 'graduated', endedOn: TODAY, schedule: { days: [0], time: '06:00', cue: null } });
     const ended = habit({ id: 'end', status: 'ended', endedOn: TODAY, schedule: { days: [0], time: null, cue: 'x' } });
     const path = buildTodayPath(input({ habits: [...habits, graduated, ended] }), NOW);
-    expect(path.nodes.map((n) => n.habitId)).toEqual(['morning1', 'morning2', 'night', 'cueA', 'cueB']);
+    expect(path.nodes.map((n) => (n.kind === 'habit' ? n.habitId : n.id))).toEqual(['morning1', 'morning2', 'night', 'cueA', 'cueB']);
   });
 
   it('AC-CORE-05: optimist のときだけ「今週 {done}/{scheduled} 回」を添える', () => {
     const h = [habit({ id: 'a', schedule: { days: [1, 3, 5, 0], time: null, cue: 'x' } })];
     const logs = [log('2026-10-12', true, { habitId: 'a' }), log('2026-10-14', true, { habitId: 'a' })];
-    expect(buildTodayPath(input({ habits: h, habitLogs: logs }), NOW).nodes[0].weekCount).toBeNull();
+    expect(weekOf(buildTodayPath(input({ habits: h, habitLogs: logs }), NOW))).toBeNull();
     for (const persona of ['regret', 'meaning', 'selfblame', 'notfun'] as const) {
-      expect(buildTodayPath(input({ habits: h, habitLogs: logs, persona }), NOW).nodes[0].weekCount).toBeNull();
+      expect(weekOf(buildTodayPath(input({ habits: h, habitLogs: logs, persona }), NOW))).toBeNull();
     }
     const opt = buildTodayPath(input({ habits: h, habitLogs: logs, persona: 'optimist' }), NOW);
-    expect(opt.nodes[0].weekCount).toEqual({ done: 2, scheduled: 4 });
+    expect(weekOf(opt)).toEqual({ done: 2, scheduled: 4 });
   });
 
   it('ノードは実行意図の1文と単位を持つ', () => {
@@ -101,5 +110,64 @@ describe('割り込みカード（記録なしの理由）', () => {
 describe('今日は予定のない習慣', () => {
   it('active で今日が予定日でない習慣を返す', () => {
     expect(unscheduledHabits(habits, TODAY).map((x) => x.id)).toEqual(['weekday']);
+  });
+});
+
+describe('buildTodayPath（やること）', () => {
+  const tasks = [
+    task({ id: 'b', title: 'B', createdAt: 2 }),
+    task({ id: 'a', title: 'A', nextStep: '見出しを足す', createdAt: 1 }),
+    task({ id: 'c', title: 'C', createdAt: 3 }),
+  ];
+
+  it('AC-START-02: 今日のやることは最大1件で createdAt が最も古いもの。残りは「他のやること」に入る', () => {
+    const path = buildTodayPath(input({ tasks }), NOW);
+    const taskNodes = path.nodes.filter((n) => n.kind === 'task');
+    expect(taskNodes).toHaveLength(1);
+    expect(taskNodes[0]).toMatchObject({ taskId: 'a', state: 'next' });
+    expect(path.otherTasks.map((t) => t.id)).toEqual(['b', 'c']);
+  });
+
+  it('AC-START-02: 片づけたものと別の日のものは今日のやることに入らない', () => {
+    const list = [task({ id: 'x', createdAt: 0, archivedAt: NOW }), task({ id: 'y', createdAt: 0, plannedFor: '2026-10-19' }), ...tasks];
+    const path = buildTodayPath(input({ tasks: list }), NOW);
+    expect(path.nodes.find((n) => n.kind === 'task')).toMatchObject({ taskId: 'a' });
+    expect(path.otherTasks.map((t) => t.id)).toEqual(['b', 'c']);
+  });
+
+  it('やることのノードは習慣の後で、次の一手（なければタイトル）を出し、A 条件ではタイトルを出す', () => {
+    const p = buildTodayPath(input({ habits: [habit({ id: 'h' })], tasks }), NOW);
+    expect(p.nodes.map((n) => n.kind)).toEqual(['habit', 'task']);
+    expect(p.nodes[1]).toMatchObject({ label: '見出しを足す', title: 'A', state: 'todo' });
+    const a = buildTodayPath(input({ tasks, flags: { judgmentEnforced: true, roughStart: false } }), NOW);
+    expect(a.nodes[0]).toMatchObject({ label: 'A' });
+    const noNext = buildTodayPath(input({ tasks: [task({ id: 'z', title: 'Z' })] }), NOW);
+    expect(noNext.nodes[0]).toMatchObject({ label: 'Z' });
+  });
+
+  it('今日そのやることでセッションを始めていれば完了', () => {
+    const started = session({ taskId: 'a', startedAt: NOW - 3600_000, endedAt: NOW - 3000_000, outcome: 'stopped' });
+    const p = buildTodayPath(input({ tasks, sessions: [started] }), NOW);
+    expect(p.nodes[0]).toMatchObject({ kind: 'task', state: 'done' });
+    expect(p.nextNodeId).toBeNull();
+  });
+});
+
+describe('割り込みカード（再開・持ち越し）', () => {
+  it('持ち越しは予定日が今日より前の未片づけのやること。あとでを押した日は出さない', () => {
+    const tasks = [task({ id: 'old', plannedFor: '2026-10-16' }), task({ id: 'now' })];
+    expect(buildTodayPath(input({ tasks }), NOW).interrupts).toEqual([{ id: 'carry', tasks: [tasks[0]] }]);
+    expect(buildTodayPath(input({ tasks, dismissed: { carry: TODAY } }), NOW).interrupts).toEqual([]);
+  });
+
+  it('優先順は 再開 → 記録なしの理由 → 持ち越し で、最大2枚', () => {
+    const tasks = [task({ id: 'old', plannedFor: '2026-10-16' })];
+    const running = session({ taskId: 'old', startedAt: NOW - 4 * 60_000 });
+    const h = [habit({ id: 'p', startedOn: '2026-10-16' })];
+    const p = buildTodayPath(input({ tasks, sessions: [running], habits: h }), NOW);
+    expect(p.interrupts.map((c) => c.id)).toEqual(['resume', 'reason']);
+    expect(p.interrupts[0]).toMatchObject({ sessionId: 's1', startedAt: NOW - 4 * 60_000, remainingMs: 6 * 60_000 });
+    const noRun = buildTodayPath(input({ tasks, habits: h }), NOW);
+    expect(noRun.interrupts.map((c) => c.id)).toEqual(['reason', 'carry']);
   });
 });

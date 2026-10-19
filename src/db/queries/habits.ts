@@ -1,21 +1,27 @@
-import { addDays } from '../../domain/dates';
-import type { Countermeasure, Habit, HabitLog, LocalDate, ReasonTag, WeeklyCheck } from '../../domain/types';
+import { addDays, dayStart } from '../../domain/dates';
+import type { Countermeasure, Habit, HabitLog, LocalDate, ReasonTag, Session, Task, WeeklyCheck } from '../../domain/types';
 import { db } from '../db';
 
 export interface HomeData {
   habits: Habit[];
   logs: HabitLog[];
   tags: ReasonTag[];
+  /** 未片づけで予定日が今日以前のやること */
+  tasks: Task[];
+  /** 前日の論理日の始まり以降に始まったセッション */
+  sessions: Session[];
 }
 
-/** ホーム用: すべての習慣、today-7 以降の記録、理由タグ（並び順） */
+/** ホーム用: すべての習慣、today-7 以降の記録、理由タグ（並び順）、今日までのやること、最近のセッション */
 export async function queryHomeData(today: LocalDate): Promise<HomeData> {
-  const [habits, logs, tags] = await Promise.all([
+  const [habits, logs, tags, tasks, sessions] = await Promise.all([
     db.habits.toArray(),
     db.habitLogs.where('date').aboveOrEqual(addDays(today, -7)).toArray(),
     db.reasonTags.orderBy('order').toArray(),
+    db.tasks.where('plannedFor').belowOrEqual(today).toArray(),
+    db.sessions.where('startedAt').aboveOrEqual(dayStart(addDays(today, -1))).toArray(),
   ]);
-  return { habits, logs, tags };
+  return { habits, logs, tags, tasks: tasks.filter((t) => t.archivedAt === null), sessions };
 }
 
 export function queryHabit(id: string): Promise<Habit | undefined> {

@@ -4,6 +4,9 @@ import { AppLayout } from './ui/screens/AppLayout';
 
 // 画面はルートごとに遅延読み込みする（§6.1.2）。T13 以降のモジュールはまだ空の画面
 const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
+const TaskList = lazy(() => import('./ui/screens/start/TaskList'));
+const TaskDetail = lazy(() => import('./ui/screens/start/TaskDetail'));
+const TaskNew = lazy(() => import('./ui/screens/start/TaskNew'));
 const Onboarding = lazy(() => import('./ui/screens/onboarding/Onboarding'));
 const HabitWizard = lazy(() => import('./ui/screens/habits/HabitWizard'));
 const Home = lazy(() => import('./ui/screens/today/Home'));
@@ -13,8 +16,6 @@ const HabitList = lazy(() => import('./ui/screens/habits/HabitList'));
 const Library = lazy(() => import('./ui/screens/library/Library'));
 
 const placeholderPaths = [
-  '/tasks/new',
-  '/tasks/:id',
   '/session/:id',
   '/session/:id/end',
   '/escape/new',
@@ -40,7 +41,6 @@ const placeholderPaths = [
   '/review/calibration',
   '/review/patterns',
   '/review/experiment',
-  '/library/tasks',
   '/library/goals',
   '/library/metrics',
   '/library/moves',
@@ -54,6 +54,9 @@ export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
+      { path: '/library/tasks', element: <TaskList /> },
+      { path: '/tasks/:id', element: <TaskDetail /> },
+      { path: '/tasks/new', element: <TaskNew /> },
       { path: '/', element: <Home /> },
       { path: '/onboarding', element: <Onboarding /> },
       { path: '/habits/new', element: <HabitWizard /> },

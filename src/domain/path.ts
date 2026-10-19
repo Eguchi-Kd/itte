@@ -1,11 +1,12 @@
 // きょうの道（§8.10）
-// M1 では習慣のノードと「記録なしの理由」の割り込みだけを組み立てる。
-// 判定・決めかけの手・やること・週次ふりかえり・1日のしめのノードは、各モジュールのタスクで PathInput と PathNode に足す
+// 判定・決めかけの手・週次ふりかえり・1日のしめのノードは、各モジュールのタスクで PathInput と PathNode に足す
 import { formatIntention } from './habits/formatIntention';
 import { pendingReasonPrompts, type ReasonPrompt } from './habits/reasons';
 import { isScheduled } from './habits/schedule';
 import { weekCount } from './habits/stats';
-import type { EpochMs, Habit, HabitLog, ID, LocalDate, Persona } from './types';
+import { activeSession } from './start/session';
+import { carryOverCandidates, startedOn, todayTask } from './start/tasks';
+import type { EpochMs, Habit, HabitLog, ID, LocalDate, Persona, Session, Task } from './types';
 
 /** 道に効く機能フラグ（§9.2 の Flags の一部。実験ランナーは T30 で computeFlags から渡す） */
 export interface PathFlags {
@@ -22,6 +23,10 @@ export interface PathInput {
   habits: readonly Habit[];
   /** 少なくとも today-7〜today の記録 */
   habitLogs: readonly HabitLog[];
+  /** 未片づけのやること（予定日が今日以前のもの） */
+  tasks: readonly Task[];
+  /** 少なくとも今日始まったセッションと、終わっていないセッション */
+  sessions: readonly Session[];
   /** 割り込みカード ID → 「あとで」を押した論理日 */
   dismissed: Record<string, LocalDate>;
 }
@@ -43,11 +48,24 @@ export interface HabitPathNode {
   weekCount: { done: number; scheduled: number } | null;
 }
 
-export type PathNode = HabitPathNode;
+export interface TaskPathNode {
+  id: string;
+  kind: 'task';
+  state: PathNodeState;
+  taskId: ID;
+  /** 次の一手（なければタイトル）。実験の A 条件ではタイトル */
+  label: string;
+  title: string;
+}
+
+export type PathNode = HabitPathNode | TaskPathNode;
 
 export type InterruptCardId = 'resume' | 'reason' | 'carry' | 'integrity' | 'backup' | 'install';
 
-export type InterruptCard = { id: 'reason'; prompts: ReasonPrompt[] };
+export type InterruptCard =
+  | { id: 'resume'; sessionId: ID; startedAt: EpochMs; remainingMs: number }
+  | { id: 'reason'; prompts: ReasonPrompt[] }
+  | { id: 'carry'; tasks: Task[] };
 
 /** §6.3.3 の優先順 */
 export const INTERRUPT_PRIORITY: readonly InterruptCardId[] = ['resume', 'reason', 'carry', 'integrity', 'backup', 'install'];
@@ -57,6 +75,8 @@ export interface TodayPath {
   interrupts: InterruptCard[];
   nodes: PathNode[];
   nextNodeId: string | null;
+  /** 今日のやることの2件目以降（「他のやること {n}件」に折りたたむ） */
+  otherTasks: Task[];
 }
 
 function habitOrder(a: Habit, b: Habit): number {
@@ -84,18 +104,29 @@ export function isDismissed(dismissed: Record<string, LocalDate>, id: InterruptC
   return dismissed[id] === today;
 }
 
-export function buildTodayPath(input: PathInput, _now: EpochMs): TodayPath {
-  const { today, habits, habitLogs, persona } = input;
+export function buildTodayPath(input: PathInput, now: EpochMs): TodayPath {
+  const { today, habits, habitLogs, persona, tasks, sessions, flags } = input;
 
-  // 割り込みカード（§6.3.3）。M1 は 2: 記録なしの理由 だけ
+  // 割り込みカード（§6.3.3）
   const candidates: InterruptCard[] = [];
+  const running = activeSession(sessions, now);
+  if (running) {
+    candidates.push({
+      id: 'resume',
+      sessionId: running.id,
+      startedAt: running.startedAt,
+      remainingMs: running.startedAt + 10 * 60_000 - now,
+    });
+  }
   const prompts = pendingReasonPrompts(habits, habitLogs, today);
   if (prompts.length > 0 && !isDismissed(input.dismissed, 'reason', today)) candidates.push({ id: 'reason', prompts });
+  const carry = carryOverCandidates(tasks, today);
+  if (carry.length > 0 && !isDismissed(input.dismissed, 'carry', today)) candidates.push({ id: 'carry', tasks: carry });
   const interrupts = candidates
     .sort((a, b) => INTERRUPT_PRIORITY.indexOf(a.id) - INTERRUPT_PRIORITY.indexOf(b.id))
     .slice(0, MAX_INTERRUPTS);
 
-  // ノード（§8.10 の 3: 今日が予定日の active な習慣）
+  // 3: 今日が予定日の active な習慣
   const doneToday = new Map(habitLogs.filter((l) => l.date === today && l.done).map((l) => [l.habitId, l.amount]));
   const nodes: PathNode[] = todayHabits(habits, today).map((h) => ({
     id: `habit:${h.id}`,
@@ -109,7 +140,20 @@ export function buildTodayPath(input: PathInput, _now: EpochMs): TodayPath {
     weekCount: persona === 'optimist' ? weekCount(h, habitLogs, today) : null,
   }));
 
+  // 4: 今日のやること（1件だけ）
+  const { task, others } = todayTask(tasks, today);
+  if (task) {
+    nodes.push({
+      id: `task:${task.id}`,
+      kind: 'task',
+      state: startedOn(task, sessions, today) ? 'done' : 'todo',
+      taskId: task.id,
+      label: flags.roughStart && task.nextStep ? task.nextStep : task.title,
+      title: task.title,
+    });
+  }
+
   const next = nodes.find((n) => n.state !== 'done') ?? null;
   if (next) next.state = 'next';
-  return { interrupts, nodes, nextNodeId: next?.id ?? null };
+  return { interrupts, nodes, nextNodeId: next?.id ?? null, otherTasks: others };
 }

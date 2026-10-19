@@ -6,17 +6,25 @@ import { Link, useNavigate } from 'react-router';
 import { ja } from '../../../copy/ja';
 import { queryHomeData } from '../../../db/queries/habits';
 import { updateSettings } from '../../../db/repo/common';
+import { carryOverTask, closeTask } from '../../../db/repo/start';
 import { logicalDate } from '../../../domain/dates';
 import { formatDateShort } from '../../../domain/display';
-import { buildTodayPath, DEFAULT_PATH_FLAGS, unscheduledHabits } from '../../../domain/path';
+import { buildTodayPath, unscheduledHabits } from '../../../domain/path';
 import type { Habit, LocalDate } from '../../../domain/types';
 import { BottomSheet } from '../../components/BottomSheet';
 import { Button } from '../../components/Button';
 import { EmptyState } from '../../components/EmptyState';
 import { EntryChoices, ENTRY_PATHS } from '../../components/EntryChoices';
+import { useFlags } from '../../hooks/useFlags';
 import { useHabitActions } from '../../hooks/useHabitActions';
 import { useNow } from '../../hooks/useNow';
 import { useSettings } from '../../hooks/useSettings';
+import { useStartTask } from '../../hooks/useStartTask';
+import { ListRow } from '../../components/ListRow';
+import { fill } from '../../../copy/fill';
+import { CarryCard } from './CarryCard';
+import { ResumeCard } from './ResumeCard';
+import { TaskNodeView } from './TaskNodeView';
 import { AmountSheet } from './AmountSheet';
 import { HabitNodeView } from './HabitNodeView';
 import { PastRecordsSheet } from './PastRecordsSheet';
@@ -29,6 +37,8 @@ export default function Home() {
   const today: LocalDate = logicalDate(now);
   const data = useLiveQuery(() => queryHomeData(today), [today]);
   const actions = useHabitActions();
+  const flags = useFlags();
+  const startTask = useStartTask();
   const [amountFor, setAmountFor] = useState<Habit | null>(null);
   const [pastOpen, setPastOpen] = useState(false);
   const [entryOpen, setEntryOpen] = useState(false);
@@ -39,16 +49,18 @@ export default function Home() {
     {
       today,
       persona: settings.persona,
-      flags: DEFAULT_PATH_FLAGS,
+      flags,
       habits: data.habits,
       habitLogs: data.logs,
+      tasks: data.tasks,
+      sessions: data.sessions,
       dismissed: settings.dismissed,
     },
     now,
   );
   const habitById = new Map(data.habits.map((h) => [h.id, h]));
   const unscheduled = unscheduledHabits(data.habits, today);
-  const empty = data.habits.length === 0;
+  const empty = data.habits.length === 0 && data.tasks.length === 0 && path.interrupts.length === 0;
   const dismiss = (id: string) => void updateSettings({ dismissed: { ...settings.dismissed, [id]: today } }, Date.now());
 
   return (
@@ -67,7 +79,9 @@ export default function Home() {
       </header>
 
       {path.interrupts.map((card) =>
-        card.id === 'reason' ? (
+        card.id === 'resume' ? (
+          <ResumeCard key={card.id} sessionId={card.sessionId} startedAt={card.startedAt} />
+        ) : card.id === 'reason' ? (
           <ReasonCard
             key={card.id}
             prompts={card.prompts}
@@ -76,7 +90,15 @@ export default function Home() {
             onTag={(p, tagIds) => void actions.missed(p.habitId, p.date, tagIds)}
             onLater={() => dismiss('reason')}
           />
-        ) : null,
+        ) : (
+          <CarryCard
+            key={card.id}
+            tasks={card.tasks}
+            onMove={(task) => void carryOverTask(task.id, today, Date.now())}
+            onClose={(task, reason) => void closeTask(task.id, reason, Date.now())}
+            onLater={() => dismiss('carry')}
+          />
+        ),
       )}
 
       {empty ? (
@@ -85,6 +107,16 @@ export default function Home() {
         <section aria-label={ja.today.path}>
           <ol className="flex flex-col" data-testid="today-path">
             {path.nodes.map((node, i) => {
+              if (node.kind === 'task') {
+                return (
+                  <TaskNodeView
+                    key={node.id}
+                    node={node}
+                    isLast={i === path.nodes.length - 1}
+                    onStart={() => void startTask(node.taskId)}
+                  />
+                );
+              }
               const habit = habitById.get(node.habitId);
               return (
                 <HabitNodeView
@@ -105,6 +137,20 @@ export default function Home() {
             </p>
           )}
         </section>
+      )}
+
+      {path.otherTasks.length > 0 && (
+        <details className="card p-0" data-testid="other-tasks">
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-label">
+            {fill(ja.today.otherTasks, { n: path.otherTasks.length })}
+            <ChevronDown size={20} strokeWidth={2.25} aria-hidden="true" />
+          </summary>
+          <div className="pb-1">
+            {path.otherTasks.map((t) => (
+              <ListRow key={t.id} to={`/tasks/${t.id}`} title={t.nextStep ?? t.title} />
+            ))}
+          </div>
+        </details>
       )}
 
       {unscheduled.length > 0 && (
