@@ -1,5 +1,7 @@
 import type {
+  AppOpen,
   Candidate,
+  DailyCheck,
   Countermeasure,
   EscapeLog,
   EvaluationFunction,
@@ -14,6 +16,7 @@ import type {
   Session,
   StallFlag,
   StuckLog,
+  Task,
   WeeklyCheck,
   WeeklyReviewRun,
 } from '../../domain/types';
@@ -38,6 +41,9 @@ export interface WeeklyData {
   stallFlags: StallFlag[];
   efs: EvaluationFunction[];
   runs: WeeklyReviewRun[];
+  dailyChecks: DailyCheck[];
+  appOpens: AppOpen[];
+  tasks: Task[];
 }
 
 export async function queryWeeklyData(): Promise<WeeklyData> {
@@ -59,6 +65,9 @@ export async function queryWeeklyData(): Promise<WeeklyData> {
     stallFlags,
     efs,
     runs,
+    dailyChecks,
+    appOpens,
+    tasks,
   ] = await Promise.all([
     db.habits.toArray(),
     db.habitLogs.toArray(),
@@ -77,6 +86,9 @@ export async function queryWeeklyData(): Promise<WeeklyData> {
     db.stallFlags.toArray(),
     db.evaluationFunctions.toArray(),
     db.weeklyReviewRuns.toArray(),
+    db.dailyChecks.toArray(),
+    db.appOpens.toArray(),
+    db.tasks.toArray(),
   ]);
-  return { habits, habitLogs, checks, countermeasures, tags, sessions, stuckLogs, escapeLogs, moves, candidates, moveReviews, joseki, judgments, goals, stallFlags, efs, runs };
+  return { habits, habitLogs, checks, countermeasures, tags, sessions, stuckLogs, escapeLogs, moves, candidates, moveReviews, joseki, judgments, goals, stallFlags, efs, runs, dailyChecks, appOpens, tasks };
 }

@@ -310,6 +310,13 @@ export const ja = {
       finish: '記録する', noMoves: '感想戦をした手 0件',
     },
     conditions: { board: '盤面が見えている', eval: '評価関数が一つ', trigger: '手番がはっきりしている', reading: '読み' },
+    numbersScreen: {
+      title: '数字（週次レポート）', prev: '前の週', next: '次の週',
+      startRate: '着手率', stuckContinue: '詰まり後の継続率', noStuckContinue: '詰まりなしで止めた後の継続率',
+      escapes: '逃避ログ（直前の状態）', escapeRecord: '逃避ログの記録率', driftWorry: '消費時間の中央値（気がかりあり）',
+      driftNoWorry: '消費時間の中央値（気がかりなし）', badRate: '感想戦の悪手率', blind: '見落とし別の件数', delay: '判定遅延の中央値',
+      ratioValue: '{pct}%（{n}/{d}）', minutes: '{v}分（{n}日）', hours: '{v}時間（{n}件）', count: '{n}件', none: '未記入',
+    },
     patternsScreen: { thisWeek: '今週 {done}/{scheduled} 回', lastWeek: '先週 {done}/{scheduled} 回' },
   },
   experiment: {

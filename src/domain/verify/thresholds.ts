@@ -15,3 +15,6 @@ export const PATTERN_MAX = 3;
 
 // TODO(spec): 15-6 .ics の DTEND は、単位が「分」以外なら DTSTART + 15分（§8.12.1）
 export const ICS_DEFAULT_DURATION_MIN = 15;
+
+// 数字の画面で値を出す最小の件数（分母）。これより少なければ「—（{n}件）」と出す（§6.10、AC-REV-04）
+export const NUMBERS_MIN_N = 3;
