@@ -8,11 +8,13 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { TextField } from '../../components/TextField';
 import { Toggle } from '../../components/Toggle';
 import { useFeedback } from '../../feedback/FeedbackProvider';
+import { useFlags } from '../../hooks/useFlags';
 
 export default function MoveQuick() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { notify } = useFeedback();
+  const flags = useFlags();
   const [situation, setSituation] = useState('');
   const [chosenText, setChosenText] = useState('');
   const [retro, setRetro] = useState(params.get('retro') === '1');
@@ -32,7 +34,7 @@ export default function MoveQuick() {
         onClick={async () => {
           setBusy(true);
           try {
-            await createQuickMove({ situation, chosenText, retro }, Date.now());
+            await createQuickMove({ situation, chosenText, retro, phase: flags.preset === 'board' ? flags.phase : null }, Date.now());
             notify({ type: 'moveDecided' });
             navigate('/', { replace: true });
           } finally {

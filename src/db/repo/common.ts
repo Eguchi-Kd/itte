@@ -1,6 +1,8 @@
 // 共通のリポジトリ関数（§7.6）
 import { logicalDate } from '../../domain/dates';
-import type { EpochMs, LocalDate, Settings, WeeklyReviewRun } from '../../domain/types';
+import { DomainError } from '../../domain/errors';
+import { runningExperiment } from '../../domain/experiment';
+import type { EpochMs, Experiment, ExperimentPreset, LocalDate, Settings, WeeklyReviewRun } from '../../domain/types';
 import { db } from '../db';
 import { defaultSettings } from '../seed';
 
@@ -58,5 +60,26 @@ export async function upsertWeeklyReviewRun(
     };
     await db.weeklyReviewRuns.put(run);
     return run;
+  });
+}
+
+/** 実験を始める。実行中の実験（予約を含む）があれば CONFLICT（I17） */
+export async function startExperiment(preset: ExperimentPreset, startDate: LocalDate, now: EpochMs): Promise<Experiment> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate)) throw new DomainError('VALIDATION', 'errors.required', { startDate });
+  return db.transaction('rw', db.experiments, async () => {
+    if (runningExperiment(await db.experiments.toArray(), logicalDate(now))) {
+      throw new DomainError('CONFLICT', 'errors.experimentRunning');
+    }
+    const e: Experiment = { id: crypto.randomUUID(), preset, startDate, stoppedAt: null, createdAt: now };
+    await db.experiments.add(e);
+    return e;
+  });
+}
+
+/** 実験を中止する（stoppedAt を入れる） */
+export async function stopExperiment(id: string, now: EpochMs): Promise<void> {
+  await db.transaction('rw', db.experiments, async () => {
+    const e = await db.experiments.get(id);
+    if (e && e.stoppedAt === null) await db.experiments.update(id, { stoppedAt: now });
   });
 }

@@ -18,3 +18,19 @@ export const ICS_DEFAULT_DURATION_MIN = 15;
 
 // 数字の画面で値を出す最小の件数（分母）。これより少なければ「—（{n}件）」と出す（§6.10、AC-REV-04）
 export const NUMBERS_MIN_N = 3;
+
+// 仮説の判定の閾値（§9.4）
+export const H1_MIN_DIFF = 0.2;
+export const H1_MIN_PAIRS = 3;
+export const H2_MIN_FILLED = 5;
+export const H2_MIN_RECORD_RATE = 0.5;
+// TODO(spec): 15-6 H3 の差 0.10 と U1 の差15分は、この統合で暫定的に決めた値
+export const H3_MIN_DIFF = 0.1;
+export const H3_MIN_N = 5;
+export const U1_MIN_DIFF_MIN = 15;
+export const U1_MIN_DAYS = 5;
+export const B1_MIN_REVIEWS = 5;
+export const B2_MIN_BAD = 3;
+export const B4_MIN_RATE = 0.5;
+export const K_MIN_JUDGMENTS = 3;
+export const K3_MIN_USAGE = 0.5;

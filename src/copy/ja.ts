@@ -324,6 +324,32 @@ export const ja = {
     begin: 'この実験を始める', stop: '中止する',
     status: { running: '実験中', insufficient: 'データ不足', supported: '支持', falsified: '反証', undetermined: '判定不能' },
     limits: '自己申告の記録にもとづく、1人分の時系列です',
+    title: '実験', startDate: '開始日', weeks: '{n}週', week: 'w{n}', current: 'いまの週', past: '終わった実験',
+    stopTitle: 'この実験を中止します', hypotheses: '仮説', result: '{id} {status}: {detail}', resultRunning: '{id} {status}',
+    period: '{start}〜{end}', stopped: '中止', notStarted: '開始前（{date}から）',
+    presets: {
+      start: {
+        name: '着手の実験', changes: 'A の週は、ラフ登録が名前だけになり、詰まるボタンと次の一手を出しません',
+        hypothesis: '初日に止まる原因は完璧主義の予測か。詰まり点を言葉にすると離脱が減るか',
+        nowA: 'いまは A（比較のための期間）。ラフ登録は名前だけになります',
+      },
+      board: {
+        name: '盤面の実験', changes: 'A の週は、＋ の「手番」が簡易記録になります',
+        hypothesis: '先が読めない原因は、読みの力ではなく、手番への気づきと盤面の見え方か',
+        nowA: 'いまは A（比較のための期間）。手番は簡易記録になります',
+      },
+      kizami: {
+        name: '段の実験', changes: 'A の週は、判定待ちをホームと盤面に出しません（段の詳細からは判定できます）',
+        hypothesis: '期限と判定の仕組みで、自己評価と実測のずれが減るか',
+        nowA: 'いまは A（比較のための期間）。判定待ちはホームに出ません',
+      },
+    },
+    nowB: 'いまは B（すべての機能）です',
+    ids: {
+      H1: 'H1 完璧主義の予測', H2: 'H2 回避駆動', H3: 'H3 詰まり点の言語化', U1: 'U1 課題のない日の漂流',
+      B1: 'B1 悪手率', B2: 'B2 見落としの内訳', B3: 'B3 事後の気づき', B4: 'B4 継続率',
+      K1: 'K1 較正誤差', K2: 'K2 判定遅延', K3: 'K3 使用率', K4: 'K4 刻み発生率',
+    },
   },
   settings: {
     sound: '音', haptics: '振動', tags: '理由タグ', redoPersona: 'タイプ診断をやり直す',

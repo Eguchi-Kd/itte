@@ -19,6 +19,7 @@ import { ScoreInput } from '../../components/ScoreInput';
 import { TextField } from '../../components/TextField';
 import { Toggle } from '../../components/Toggle';
 import { useFeedback } from '../../feedback/FeedbackProvider';
+import { useFlags } from '../../hooks/useFlags';
 
 const TOTAL = 4;
 const MAX_JOSEKI = 5;
@@ -27,6 +28,7 @@ const emptyCandidate = (): CandidateInput => ({ description: '', plus1: null, pl
 export default function MoveNew() {
   const navigate = useNavigate();
   const { notify } = useFeedback();
+  const flags = useFlags();
   const board = useLiveQuery(() => queryBoardData(), []);
   const joseki = useLiveQuery(() => queryJoseki(), []);
   const [step, setStep] = useState(1);
@@ -62,7 +64,10 @@ export default function MoveNew() {
     try {
       if (step === 3) {
         // ステップ3を終えた時点で手と候補を保存する
-        const { move, candidates } = await createMove({ situation, triggerId, irreversible, unreadable, candidates: cands }, Date.now());
+        const { move, candidates } = await createMove(
+          { situation, triggerId, irreversible, unreadable, candidates: cands, phase: flags.preset === 'board' ? flags.phase : null },
+          Date.now(),
+        );
         setSaved({ moveId: move.id, candidates });
         setStep(4);
       } else if (saved && chosen) {
