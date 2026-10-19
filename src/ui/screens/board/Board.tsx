@@ -6,6 +6,11 @@ import { Link, useNavigate } from 'react-router';
 import { ja } from '../../../copy/ja';
 import { fill } from '../../../copy/fill';
 import { queryBoardData } from '../../../db/queries/board';
+import { queryGoalsData } from '../../../db/queries/goals';
+import { pendingJudgments } from '../../../domain/goals/deadlines';
+import { useFlags } from '../../hooks/useFlags';
+import { useSettings } from '../../hooks/useSettings';
+import { StallCard, stallCount } from '../goals/StallCard';
 import { deleteBoardItem, restoreBoardItem, setBoardItemStatus } from '../../../db/repo/board';
 import { activeEvaluation, buildBoard, dueLabel, type DeadlineRow } from '../../../domain/board/board';
 import { diffDays, logicalDate } from '../../../domain/dates';
@@ -23,9 +28,17 @@ export default function Board() {
   const navigate = useNavigate();
   const today = logicalDate(useNow());
   const data = useLiveQuery(() => queryBoardData(), []);
+  const goalsData = useLiveQuery(() => queryGoalsData(), []);
+  const settings = useSettings();
+  const { judgmentEnforced } = useFlags();
   const { toast, notify } = useFeedback();
   const [menuFor, setMenuFor] = useState<BoardItem | null>(null);
-  if (!data) return null;
+  if (!data || !goalsData || !settings) return null;
+  // 判定待ち（実験で判定の強制が切られている期間は出さない）と、却下されていない足踏み
+  const pending = judgmentEnforced ? pendingJudgments(goalsData.goals, goalsData.requests) : [];
+  const goalById = new Map(goalsData.goals.map((g) => [g.id, g]));
+  const stalls = goalsData.stallFlags.filter((f) => f.dismissedAt === null && goalById.has(f.goalId));
+  const now = Date.now();
 
   const ef = activeEvaluation(data.efs, today);
   const board = buildBoard(data.items, data.goals, today);
@@ -78,6 +91,26 @@ export default function Board() {
           </>
         )}
       </Card>
+
+      {pending.length > 0 && (
+        <section aria-label={ja.goals.pendingTitle} data-testid="pending-judgments">
+          <h2 className="mb-2 text-h2">{ja.goals.pendingTitle}</h2>
+          <div className="card p-0">
+            {pending.map((g) => (
+              <ListRow key={g.id} to={`/judge/${g.id}`} title={g.title} sub={fill(ja.today.node.judgeSub, { date: formatDateShort(g.deadline) })} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {stalls.length > 0 && (
+        <section aria-label={ja.goals.stallsTitle} data-testid="stall-flags" className="flex flex-col gap-2">
+          <h2 className="text-h2">{ja.goals.stallsTitle}</h2>
+          {stalls.map((f) => (
+            <StallCard key={f.id} flag={f} goal={goalById.get(f.goalId)!} n={stallCount(f, goalsData, settings, now)} />
+          ))}
+        </section>
+      )}
 
       {empty ? (
         <EmptyState text={ja.board.empty} actionLabel={ja.board.emptyAction} onAction={() => navigate('/board/items/new')} />

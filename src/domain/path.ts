@@ -1,13 +1,27 @@
 // きょうの道（§8.10）
 // 判定・決めかけの手・週次ふりかえり・1日のしめのノードは、各モジュールのタスクで PathInput と PathNode に足す
 import { undecidedMoves } from './board/moves';
+import { pendingJudgments } from './goals/deadlines';
 import { formatIntention } from './habits/formatIntention';
 import { pendingReasonPrompts, type ReasonPrompt } from './habits/reasons';
 import { isScheduled } from './habits/schedule';
 import { weekCount } from './habits/stats';
 import { activeSession } from './start/session';
 import { carryOverCandidates, startedOn, todayTask } from './start/tasks';
-import type { Candidate, EpochMs, Habit, HabitLog, ID, LocalDate, Move, Persona, Session, Task } from './types';
+import type {
+  Candidate,
+  EpochMs,
+  Goal,
+  Habit,
+  HabitLog,
+  ID,
+  JudgmentRequest,
+  LocalDate,
+  Move,
+  Persona,
+  Session,
+  Task,
+} from './types';
 
 /** 道に効く機能フラグ（§9.2 の Flags の一部。実験ランナーは T30 で computeFlags から渡す） */
 export interface PathFlags {
@@ -28,6 +42,9 @@ export interface PathInput {
   tasks: readonly Task[];
   /** 少なくとも今日始まったセッションと、終わっていないセッション */
   sessions: readonly Session[];
+  /** 段と判定待ち（JudgmentRequest） */
+  goals: readonly Goal[];
+  judgmentRequests: readonly JudgmentRequest[];
   /** 少なくとも作成から7日以内の手 */
   moves: readonly Move[];
   /** moves の候補 */
@@ -67,6 +84,15 @@ export interface TaskPathNode {
   title: string;
 }
 
+export interface JudgePathNode {
+  id: string;
+  kind: 'judge';
+  state: PathNodeState;
+  goalId: ID;
+  title: string;
+  deadline: LocalDate;
+}
+
 export interface DecidePathNode {
   id: string;
   kind: 'decide';
@@ -82,7 +108,7 @@ export interface DailyPathNode {
   state: PathNodeState;
 }
 
-export type PathNode = DecidePathNode | HabitPathNode | TaskPathNode | DailyPathNode;
+export type PathNode = JudgePathNode | DecidePathNode | HabitPathNode | TaskPathNode | DailyPathNode;
 
 export type InterruptCardId = 'resume' | 'reason' | 'carry' | 'integrity' | 'backup' | 'install';
 
@@ -151,6 +177,13 @@ export function buildTodayPath(input: PathInput, now: EpochMs): TodayPath {
     .slice(0, MAX_INTERRUPTS);
 
   const nodes: PathNode[] = [];
+
+  // 1: 判定（判定待ちの段を期限の古い順）。判定の強制が切られている期間（実験の A 条件）は出さない
+  if (flags.judgmentEnforced) {
+    for (const g of pendingJudgments(input.goals, input.judgmentRequests)) {
+      nodes.push({ id: `judge:${g.id}`, kind: 'judge', state: 'todo', goalId: g.id, title: g.title, deadline: g.deadline });
+    }
+  }
 
   // 2: 決めかけの手（作成の古い順）
   for (const m of undecidedMoves(input.moves, today)) {

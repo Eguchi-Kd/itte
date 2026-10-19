@@ -27,6 +27,7 @@ import { ResumeCard } from './ResumeCard';
 import { TaskNodeView } from './TaskNodeView';
 import { DailyNodeView } from './DailyNodeView';
 import { DecideNodeView } from './DecideNodeView';
+import { JudgeNodeView } from './JudgeNodeView';
 import { BoardStrip } from './BoardStrip';
 import { AmountSheet } from './AmountSheet';
 import { HabitNodeView } from './HabitNodeView';
@@ -57,6 +58,8 @@ export default function Home() {
       habitLogs: data.logs,
       tasks: data.tasks,
       sessions: data.sessions,
+      goals: data.goals,
+      judgmentRequests: data.judgmentRequests,
       moves: data.moves,
       candidates: data.candidates,
       startUsed: data.startUsed,
@@ -125,6 +128,9 @@ export default function Home() {
                     onAnswer={() => navigate('/daily')}
                   />
                 );
+              }
+              if (node.kind === 'judge') {
+                return <JudgeNodeView key={node.id} node={node} isLast={i === path.nodes.length - 1} />;
               }
               if (node.kind === 'decide') {
                 return <DecideNodeView key={node.id} node={node} isLast={i === path.nodes.length - 1} />;

@@ -4,6 +4,10 @@ import { AppLayout } from './ui/screens/AppLayout';
 
 // 画面はルートごとに遅延読み込みする（§6.1.2）。T13 以降のモジュールはまだ空の画面
 const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
+const JudgmentHistory = lazy(() => import('./ui/screens/goals/JudgmentHistory'));
+const GoalList = lazy(() => import('./ui/screens/goals/GoalList'));
+const GoalDetail = lazy(() => import('./ui/screens/goals/GoalDetail'));
+const JudgeLesson = lazy(() => import('./ui/screens/goals/JudgeLesson'));
 const MetricList = lazy(() => import('./ui/screens/goals/MetricList'));
 const MeasureNew = lazy(() => import('./ui/screens/goals/MeasureNew'));
 const GoalExtend = lazy(() => import('./ui/screens/goals/GoalExtend'));
@@ -36,16 +40,12 @@ const HabitList = lazy(() => import('./ui/screens/habits/HabitList'));
 const Library = lazy(() => import('./ui/screens/library/Library'));
 
 const placeholderPaths = [
-  '/goals/:id',
-  '/judge/:goalId',
   '/review',
   '/review/weekly/:weekStart',
   '/review/numbers',
   '/review/calibration',
   '/review/patterns',
   '/review/experiment',
-  '/library/goals',
-  '/library/history',
   '/settings',
   '/settings/data',
 ];
@@ -54,6 +54,10 @@ export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
+      { path: '/library/history', element: <JudgmentHistory /> },
+      { path: '/library/goals', element: <GoalList /> },
+      { path: '/goals/:id', element: <GoalDetail /> },
+      { path: '/judge/:goalId', element: <JudgeLesson /> },
       { path: '/library/metrics', element: <MetricList /> },
       { path: '/measure/new', element: <MeasureNew /> },
       { path: '/goals/:id/extend', element: <GoalExtend /> },

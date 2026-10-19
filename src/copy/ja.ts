@@ -235,6 +235,27 @@ export const ja = {
       title: '実測を記録', check: 'この値で記録します。あとから変更はできません', record: '記録する',
       summary: '{metric} {value}{unit}', noMetric: '先に指標を登録してください',
     },
+    judge: {
+      title: '判定', commitMet: '届いたら', commitUnmet: '届かなかったら',
+      checkLine: '{value}{unit}。{target}{unit} {cmp}に {result}', hours: '時間',
+      nextAction: '決めておいた次の行動', later: 'あとで', done: '判定を記録しました', closeNote: '閉じても、この選択はあとで続けられます',
+    },
+    detail: {
+      status: '状態', commitments: '決めておいたこと', prediction: '予想', predictionLine: '{p}%、{value}{unit}',
+      measurements: '実測の履歴', measurementRow: '{date} {value}{unit}', extensions: '延長の履歴',
+      extensionRow: '{from} → {to}（{reason}）', stalls: '足踏み', judgment: '判定', judgmentRow: '{date} {outcome}（{value}{unit}）',
+      corrections: '訂正の履歴', correctionRow: '{date} {field}: {value}（{reason}）', followUp: '次の選択',
+      tree: '階段', judgeAction: '判定する', viewGoal: '段を見る', unhide: '表示する', current: 'この段',
+      fields: { actualValue: '実測', investedHours: 'かけた時間', costNote: '失ったもの' },
+    },
+    followChoice: { KIZAMI: '刻む', RECUT: '切り直す', WITHDRAW: '取り下げる' },
+    history: {
+      title: '判定の履歴', all: 'すべて', correctValue: '値の訂正', correctNote: '記述の訂正', newValue: '新しい値',
+      newNote: '新しい記述', save: '訂正を追記', empty: '判定はまだありません', corrected: '訂正あり', metricFilter: '指標',
+      outcomeFilter: '結果',
+    },
+    list: { title: '段', showHidden: '非表示を表示', empty: '段はまだありません', add: '段を立てる' },
+    pendingTitle: '判定待ち', stallsTitle: '足踏み',
     extendForm: { title: '期限の延長', current: 'いまの期限: {date}', newDeadline: '新しい期限', save: '延ばす' },
     metrics: {
       title: '指標', add: '新しい指標', empty: '指標はまだありません', none: '実測はまだありません',

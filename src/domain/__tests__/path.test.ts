@@ -19,6 +19,8 @@ function input(p: Partial<PathInput> = {}): PathInput {
     habitLogs: [],
     tasks: [],
     sessions: [],
+    goals: [],
+    judgmentRequests: [],
     moves: [],
     candidates: [],
     startUsed: false,
@@ -221,5 +223,44 @@ describe('buildTodayPath（決めかけの手）', () => {
     expect(p.nodes.map((n) => n.id)).toEqual(['decide:m1', 'decide:m2', 'habit:h', 'task:t1', 'daily']);
     expect(p.nextNodeId).toBe('decide:m1');
     expect(p.nodes[0]).toMatchObject({ kind: 'decide', situation: '局面m1', candidates: [{ id: 'c1', description: '行く' }, { id: 'c2', description: '断る' }] });
+  });
+});
+
+describe('buildTodayPath（判定）', () => {
+  const g = (id: string, deadline: string, p: Record<string, unknown> = {}) => ({
+    id,
+    parentId: null,
+    recutOfId: null,
+    metricId: 'm',
+    title: `段${id}`,
+    targetValue: 3,
+    comparator: 'GTE' as const,
+    deadline,
+    status: 'OPEN' as const,
+    createdAt: 0,
+    hiddenAt: null,
+    ...p,
+  });
+  const goals = [g('late', '2026-10-16'), g('early', '2026-10-10'), g('noreq', '2026-10-12'), g('met', '2026-10-09', { status: 'MET' })];
+  const reqs = ['late', 'early', 'met'].map((goalId) => ({ goalId, requestedAt: 0, detectedAt: 0 }));
+  const move = { id: 'm1', triggerId: null, situation: '局面', mode: 'full' as const, retro: false, irreversible: false, unreadable: false, chosenCandidateId: null, chosenText: null, decidedAt: null, phase: null, createdAt: NOW - 1000 };
+
+  it('AC-CORE-05: 判定・決めかけの手・時刻つき習慣・時刻なし習慣・やること・しめの順に並べ、nextNodeId は最初の未完了', () => {
+    const habitsMixed = [
+      habit({ id: 'cue', schedule: { days: [0], time: null, cue: '寝る前' }, createdAt: 1 }),
+      habit({ id: 'timed', schedule: { days: [0], time: '07:00', cue: null }, createdAt: 2 }),
+    ];
+    const p = buildTodayPath(
+      input({ goals, judgmentRequests: reqs, moves: [move], habits: habitsMixed, tasks: [task()], startUsed: true }),
+      NOW,
+    );
+    expect(p.nodes.map((n) => n.id)).toEqual(['judge:early', 'judge:late', 'decide:m1', 'habit:timed', 'habit:cue', 'task:t1', 'daily']);
+    expect(p.nextNodeId).toBe('judge:early');
+    expect(p.nodes[0]).toMatchObject({ kind: 'judge', state: 'next', title: '段early', deadline: '2026-10-10' });
+  });
+
+  it('AC-CORE-05: 実験の A 条件（judgmentEnforced=false）では判定ノードが消える', () => {
+    const p = buildTodayPath(input({ goals, judgmentRequests: reqs, flags: { judgmentEnforced: false, roughStart: true } }), NOW);
+    expect(p.nodes.filter((n) => n.kind === 'judge')).toEqual([]);
   });
 });
