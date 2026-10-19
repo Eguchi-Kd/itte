@@ -1,8 +1,8 @@
 # 進捗
 
-STATUS: DONE
-現在のタスク: なし（T01〜T12 完了）
-対象範囲: T01〜T12（M0 基盤＋M1 習慣。docs/SPEC.md §13）
+STATUS: IN_PROGRESS
+現在のタスク: T13
+対象範囲: T01〜T32（M0〜M8。docs/SPEC.md §13）。T01〜T12 は最初のプロトタイプとして完了済み
 
 <!--
 STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
@@ -28,22 +28,46 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 - [x] T10 きょうの道（習慣）、ホーム、理由カード、取り消し、過去の記録、＋シート | commit: abfbc21 | AC: CORE-05（習慣部分）, HAB-07, UX-01, 03
 - [x] T11 習慣の詳細・一覧・編集、グラフ、カレンダー、.ics | commit: bef8ecd | AC: HAB-15, 16
 - [x] T12 アイコン、マニフェスト、デプロイ用ワークフロー | commit: 895f393 | AC: ビルド成果物の確認
+- [ ] T13 domain/start/tasks.ts、session.ts とテスト | commit: | AC: ―
+- [ ] T14 repo/start.ts とテスト | commit: | AC: START-01, 05〜11
+- [ ] T15 ラフ登録、やることノード、持ち越しカード、やることの詳細 | commit: | AC: START-02, UX-02
+- [ ] T16 タイマー（復元、Wake Lock、タイトル）、詰まりシート | commit: | AC: START-03, 06, 07（13 は手動）
+- [ ] T17 セッション終了、次の一手 | commit: | AC: START-04, 05
+- [ ] T18 起動時の処理（§6.3.4 の 1, 2, 5）、放置セッション、逃避ログ、1日のしめ | commit: | AC: START-08, 09, 10
+- [ ] T19 盤面のドメインとリポジトリ（評価関数、項目、トリガー）とテスト | commit: | AC: BOARD-01, 02, 04, 06
+- [ ] T20 盤面タブ、評価関数と手番トリガーの設定、ホームの盤面の帯とバナー | commit: | AC: BOARD-03, 05
+- [ ] T21 読みシート、手を決める、簡易記録、決めかけの手のノード、定跡の一覧 | commit: | AC: BOARD-07〜14
+- [ ] T22 段のドメイン（検証、木、期限、判定、足踏み、較正）とテスト | commit: | AC: GOAL-10, 15, 17〜19, 26
+- [ ] T23 repo/goals.ts とテスト、起動時の処理（§6.3.4 の 3, 4） | commit: | AC: GOAL-01〜09, 11, 14, 20, 25
+- [ ] T24 指標、実測、段の登録、刻む、切り直す、延長 | commit: | AC: ―
+- [ ] T25 判定のレッスン、追跡の選択、判定ノード、盤面の判定待ちと足踏み、段の詳細と木、判定の履歴と訂正 | commit: | AC: GOAL-12, 13, 24
+- [ ] T26 較正画面 | commit: | AC: GOAL-16, 21
+- [ ] T27 感情予想（開始前シート、終了画面の実際の値） | commit: | AC: START-12
+- [ ] T28 週次ふりかえりのドメインとレッスン（6区画）、ふりかえりタブ、傾向と対策の画面 | commit: | AC: REV-01〜03, 05, BOARD-15〜19
+- [ ] T29 指標の関数（§9.3）とテスト、数字の画面 | commit: | AC: START-14, REV-04
+- [ ] T30 experiment.ts、機能フラグの全画面への反映、仮説の判定関数、実験画面 | commit: | AC: EXP-01〜07
+- [ ] T31 JSON／CSV zip の書き出し、検証つき読み込み、全削除、整合性の画面、.ics のまとめ書き出しと読み込み | commit: | AC: DATA-01〜08, GOAL-22, 23, CORE-08
+- [ ] T32 ホーム画面に追加のカード、はじめてのカード、更新のスナックバー、デモデータ、アクセシビリティの点検、E2E（全体シナリオ、外部通信、当たり判定、動きの抑制、オフライン、タップ数） | commit: | AC: UX-07, 08, 10, 11, 13（15, 16 は手動）
 
 ## 完了の定義
 
-- [x] 上のタスクがすべて完了し、各行にコミットハッシュがある
-- [x] `npm run lint`、`npm run typecheck`、`npm run test`、`npm run build`、`npm run e2e` がすべて通る
-- [x] 対象範囲のタスクに割り当てた【自動】受け入れ基準が、ID 付きのテストとしてすべて存在し、通る
-- [x] E2E「オンボーディング（診断スキップ）→ 習慣を作る → ホームで『やった』→ 取り消す → もう一度『やった』」が通る
-- [x] 作業ツリーに未コミットの変更がない
-- [x] 下の「人が確認すること」が最新
+- [ ] 上のタスクがすべて完了し、各行にコミットハッシュがある
+- [ ] `npm run lint`、`npm run typecheck`、`npm run test`、`npm run build`、`npm run e2e` がすべて通る
+- [ ] 対象範囲のタスクに割り当てた【自動】受け入れ基準が、ID 付きのテストとしてすべて存在し、通る
+- [ ] E2E「オンボーディング（診断スキップ）→ 習慣を作る → ホームで『やった』→ 取り消す → もう一度『やった』」が通る
+- [ ] E2E「§13 の T32 の全体シナリオ」が通り、その間に外部へのリクエストが0件
+- [ ] 作業ツリーに未コミットの変更がない
+- [ ] 下の「人が確認すること」が最新
 
 ## 人が確認すること
 
-- AC-UX-14: iPhone の Safari と Android の Chrome で、ホーム画面に追加して単体起動できる
-- GitHub にリポジトリ `itte` を作り、push して、Settings → Pages の Source を GitHub Actions にする
-- ホーム画面に追加したアイコン（コマ）の見え方を、iPhone と Android の両方で確かめる（図柄は scripts/gen-icons.mjs で作った仮のもの）
-- push 後の GitHub Actions で `npm ci`（Node 22）から lint・型・テスト・ビルドまで通り、https://eguchi-kd.github.io/itte/ が開ける。リポジトリ名を変える場合は、ワークフローの build に `VITE_BASE=/<名前>/` を足す
+- AC-UX-14: iPhone の Safari で、ホーム画面に追加して単体起動できる（Android の Chrome は 2026-10-19 に確認済み）
+- ホーム画面に追加したアイコン（コマ）の見え方を iPhone で確かめる（図柄は scripts/gen-icons.mjs で作った仮のもの）
+- 作業のコミットを push する（このリポジトリの設定では Claude Code は push できない）。push 後の GitHub Actions が通り、https://eguchi-kd.github.io/itte/ に反映される（リポジトリと Pages の設定は 2026-10-19 に済み）
+- AC-START-13: Wake Lock に対応した端末で、タイマー中に画面が消えない
+- AC-DATA-04: 書き出した CSV を Excel で開いて文字化けしない
+- AC-UX-15: Lighthouse（モバイル）で Performance 90 以上、PWA がインストール可能
+- AC-UX-16: ライト・ダークの両方で、本文のコントラスト比が 4.5:1 以上
 - 手元で E2E を動かすとき、ポート 4319 が空いている（4173 は別のアプリが使っていたので避けた）
 - （実装中に増えたら追記する）
 
@@ -55,6 +79,7 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 
 新しいものを上に、1行ずつ書く。
 
+- 2026-10-19 GitHub に public の Eguchi-Kd/itte を作り、Pages の Source を GitHub Actions にして公開（ワークフロー成功、サイト表示を確認）。Android の Chrome で単体起動を確認（人）。ワークフローのアクションを Node.js 24 の版に上げ、対象範囲を T32 まで広げた
 - 2026-10-19 完了の定義を確認。サブエージェントの点検で弱いと指摘された AC-CORE-03, 05, HAB-10, 15, UX-06 のテストを強めた。lint・typecheck・test（174件）・build・e2e（12件）が通る。STATUS: DONE
 - 2026-10-19 T12 アイコン（Node 標準の zlib で PNG を書き出すスクリプト）、マニフェスト、GitHub Pages のワークフロー、ビルド成果物の E2E。VITE_BASE=/itte/ のビルドとプレビューで表示を確認
 - 2026-10-19 T11 習慣の詳細（累積量・28日間・週グラフ・月カレンダー・量を上げる提案・理由の内訳）、一覧、編集、記録庫、習慣の .ics（AC-HAB-15, 16）
