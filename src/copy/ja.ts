@@ -271,6 +271,10 @@ export const ja = {
       title: '較正', meaning: '＋なら予想が実測より高め、−なら低め',
       over: '予想が高め', under: '予想が低め',
       prob: '予想した確率の平均 {p}%／実際に届いた割合 {q}%（{n}件）', delay: '判定までの時間の中央値 {h}時間',
+      main: '正規化した誤差の平均', count: '{n}件', chart: '判定ごとの誤差', scatter: '予想と実測（閾値で割った値、直近20件）',
+      scatterX: '予想 ÷ 閾値', scatterY: '実測 ÷ 閾値', affect: '感情予想の誤差: 強さ {i}／持続 {d}分（{n}件）',
+      raw: '指標ごとの生の差', rawRow: '{metric}: {value}{unit}（{n}件）', empty: 'まだ予想と判定がそろった段がありません',
+      none: '—',
     },
   },
   review: {

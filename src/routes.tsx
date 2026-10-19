@@ -4,6 +4,7 @@ import { AppLayout } from './ui/screens/AppLayout';
 
 // 画面はルートごとに遅延読み込みする（§6.1.2）。T13 以降のモジュールはまだ空の画面
 const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
+const Calibration = lazy(() => import('./ui/screens/review/Calibration'));
 const JudgmentHistory = lazy(() => import('./ui/screens/goals/JudgmentHistory'));
 const GoalList = lazy(() => import('./ui/screens/goals/GoalList'));
 const GoalDetail = lazy(() => import('./ui/screens/goals/GoalDetail'));
@@ -43,7 +44,6 @@ const placeholderPaths = [
   '/review',
   '/review/weekly/:weekStart',
   '/review/numbers',
-  '/review/calibration',
   '/review/patterns',
   '/review/experiment',
   '/settings',
@@ -54,6 +54,7 @@ export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
+      { path: '/review/calibration', element: <Calibration /> },
       { path: '/library/history', element: <JudgmentHistory /> },
       { path: '/library/goals', element: <GoalList /> },
       { path: '/goals/:id', element: <GoalDetail /> },
