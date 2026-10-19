@@ -4,6 +4,7 @@ import { AppLayout } from './ui/screens/AppLayout';
 
 // 画面はルートごとに遅延読み込みする（§6.1.2）。T13 以降のモジュールはまだ空の画面
 const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
+const SessionEnd = lazy(() => import('./ui/screens/start/SessionEnd'));
 const SessionTimer = lazy(() => import('./ui/screens/start/SessionTimer'));
 const TaskList = lazy(() => import('./ui/screens/start/TaskList'));
 const TaskDetail = lazy(() => import('./ui/screens/start/TaskDetail'));
@@ -17,7 +18,6 @@ const HabitList = lazy(() => import('./ui/screens/habits/HabitList'));
 const Library = lazy(() => import('./ui/screens/library/Library'));
 
 const placeholderPaths = [
-  '/session/:id/end',
   '/escape/new',
   '/daily',
   '/board',
@@ -54,6 +54,7 @@ export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
+      { path: '/session/:id/end', element: <SessionEnd /> },
       { path: '/session/:id', element: <SessionTimer /> },
       { path: '/library/tasks', element: <TaskList /> },
       { path: '/tasks/:id', element: <TaskDetail /> },
