@@ -221,6 +221,25 @@ export const ja = {
     followQ: '次はどうする?', kizami: '刻む', recut: '切り直す', withdraw: '取り下げる',
     nextLevel: '次の段を立てる', extend: '期限を延ばす', reasonQ: '理由',
     distance: '最上位から{n}段下', hide: '非表示',
+    field: {
+      metricName: '指標の名前', unit: '単位', direction: '向き', title: '段の名前', target: '閾値', comparator: '比較',
+      deadline: '期限', value: '値', at: '日時', memo: 'メモ',
+    },
+    comparators: { GTE: '以上', LTE: '以下' },
+    dateChips: { week1: '1週間後', week2: '2週間後', month1: '1か月後', month3: '3か月後', pick: '日付を選ぶ' },
+    probabilityChip: '{n}%',
+    parentBand: '元の段: {title}',
+    kizamiTitle: '刻む', recutTitle: '切り直す',
+    notFound: 'この段は見つかりません',
+    measure: {
+      title: '実測を記録', check: 'この値で記録します。あとから変更はできません', record: '記録する',
+      summary: '{metric} {value}{unit}', noMetric: '先に指標を登録してください',
+    },
+    extendForm: { title: '期限の延長', current: 'いまの期限: {date}', newDeadline: '新しい期限', save: '延ばす' },
+    metrics: {
+      title: '指標', add: '新しい指標', empty: '指標はまだありません', none: '実測はまだありません',
+      latest: '最新 {value}{unit}（{date}）', measure: '実測を記録', save: '保存',
+    },
     stall: {
       EXTENSION_3X: '期限を{n}回延ばしています',
       NO_FOLLOW_UP_30D: '届かなかった判定から{n}日、次の段がありません',

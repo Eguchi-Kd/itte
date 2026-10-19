@@ -4,6 +4,12 @@ import { AppLayout } from './ui/screens/AppLayout';
 
 // 画面はルートごとに遅延読み込みする（§6.1.2）。T13 以降のモジュールはまだ空の画面
 const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
+const MetricList = lazy(() => import('./ui/screens/goals/MetricList'));
+const MeasureNew = lazy(() => import('./ui/screens/goals/MeasureNew'));
+const GoalExtend = lazy(() => import('./ui/screens/goals/GoalExtend'));
+const GoalRecut = lazy(() => import('./ui/screens/goals/GoalRecut'));
+const GoalKizami = lazy(() => import('./ui/screens/goals/GoalKizami'));
+const GoalNew = lazy(() => import('./ui/screens/goals/GoalNew'));
 const MoveList = lazy(() => import('./ui/screens/moves/MoveList'));
 const JosekiList = lazy(() => import('./ui/screens/moves/JosekiList'));
 const MoveDecide = lazy(() => import('./ui/screens/moves/MoveDecide'));
@@ -30,13 +36,8 @@ const HabitList = lazy(() => import('./ui/screens/habits/HabitList'));
 const Library = lazy(() => import('./ui/screens/library/Library'));
 
 const placeholderPaths = [
-  '/goals/new',
   '/goals/:id',
-  '/goals/:id/kizami',
-  '/goals/:id/recut',
-  '/goals/:id/extend',
   '/judge/:goalId',
-  '/measure/new',
   '/review',
   '/review/weekly/:weekStart',
   '/review/numbers',
@@ -44,7 +45,6 @@ const placeholderPaths = [
   '/review/patterns',
   '/review/experiment',
   '/library/goals',
-  '/library/metrics',
   '/library/history',
   '/settings',
   '/settings/data',
@@ -54,6 +54,12 @@ export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
+      { path: '/library/metrics', element: <MetricList /> },
+      { path: '/measure/new', element: <MeasureNew /> },
+      { path: '/goals/:id/extend', element: <GoalExtend /> },
+      { path: '/goals/:id/recut', element: <GoalRecut /> },
+      { path: '/goals/:id/kizami', element: <GoalKizami /> },
+      { path: '/goals/new', element: <GoalNew /> },
       { path: '/library/moves', element: <MoveList /> },
       { path: '/library/joseki', element: <JosekiList /> },
       { path: '/moves/:id', element: <MoveDecide /> },
