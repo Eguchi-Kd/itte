@@ -1,12 +1,13 @@
 // きょうの道（§8.10）
 // 判定・決めかけの手・週次ふりかえり・1日のしめのノードは、各モジュールのタスクで PathInput と PathNode に足す
+import { undecidedMoves } from './board/moves';
 import { formatIntention } from './habits/formatIntention';
 import { pendingReasonPrompts, type ReasonPrompt } from './habits/reasons';
 import { isScheduled } from './habits/schedule';
 import { weekCount } from './habits/stats';
 import { activeSession } from './start/session';
 import { carryOverCandidates, startedOn, todayTask } from './start/tasks';
-import type { EpochMs, Habit, HabitLog, ID, LocalDate, Persona, Session, Task } from './types';
+import type { Candidate, EpochMs, Habit, HabitLog, ID, LocalDate, Move, Persona, Session, Task } from './types';
 
 /** 道に効く機能フラグ（§9.2 の Flags の一部。実験ランナーは T30 で computeFlags から渡す） */
 export interface PathFlags {
@@ -27,6 +28,10 @@ export interface PathInput {
   tasks: readonly Task[];
   /** 少なくとも今日始まったセッションと、終わっていないセッション */
   sessions: readonly Session[];
+  /** 少なくとも作成から7日以内の手 */
+  moves: readonly Move[];
+  /** moves の候補 */
+  candidates: readonly Candidate[];
   /** 着手モジュールを使ったことがある（やることかセッションが1件以上） */
   startUsed: boolean;
   /** 今日の 1日のしめ（DailyCheck）がある */
@@ -62,13 +67,22 @@ export interface TaskPathNode {
   title: string;
 }
 
+export interface DecidePathNode {
+  id: string;
+  kind: 'decide';
+  state: PathNodeState;
+  moveId: ID;
+  situation: string;
+  candidates: { id: ID; description: string }[];
+}
+
 export interface DailyPathNode {
   id: 'daily';
   kind: 'daily';
   state: PathNodeState;
 }
 
-export type PathNode = HabitPathNode | TaskPathNode | DailyPathNode;
+export type PathNode = DecidePathNode | HabitPathNode | TaskPathNode | DailyPathNode;
 
 export type InterruptCardId = 'resume' | 'reason' | 'carry' | 'integrity' | 'backup' | 'install';
 
@@ -136,9 +150,26 @@ export function buildTodayPath(input: PathInput, now: EpochMs): TodayPath {
     .sort((a, b) => INTERRUPT_PRIORITY.indexOf(a.id) - INTERRUPT_PRIORITY.indexOf(b.id))
     .slice(0, MAX_INTERRUPTS);
 
+  const nodes: PathNode[] = [];
+
+  // 2: 決めかけの手（作成の古い順）
+  for (const m of undecidedMoves(input.moves, today)) {
+    nodes.push({
+      id: `decide:${m.id}`,
+      kind: 'decide',
+      state: 'todo',
+      moveId: m.id,
+      situation: m.situation,
+      candidates: input.candidates
+        .filter((c) => c.moveId === m.id)
+        .sort((a, b) => a.position - b.position)
+        .map((c) => ({ id: c.id, description: c.description })),
+    });
+  }
+
   // 3: 今日が予定日の active な習慣
   const doneToday = new Map(habitLogs.filter((l) => l.date === today && l.done).map((l) => [l.habitId, l.amount]));
-  const nodes: PathNode[] = todayHabits(habits, today).map((h) => ({
+  for (const h of todayHabits(habits, today)) nodes.push({
     id: `habit:${h.id}`,
     kind: 'habit',
     state: doneToday.has(h.id) ? 'done' : 'todo',
@@ -148,7 +179,7 @@ export function buildTodayPath(input: PathInput, now: EpochMs): TodayPath {
     unit: h.unit,
     recordedAmount: doneToday.get(h.id) ?? null,
     weekCount: persona === 'optimist' ? weekCount(h, habitLogs, today) : null,
-  }));
+  });
 
   // 4: 今日のやること（1件だけ）
   const { task, others } = todayTask(tasks, today);

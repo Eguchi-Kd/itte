@@ -190,6 +190,18 @@ export const ja = {
       title: '評価関数', metric: '指標', avoidItem: '避けたいこと {n}', start: '開始', end: '終了', save: '保存',
       current: 'いまの評価関数', list: 'これまでと、これからの評価関数', newOne: '新しく決める', editing: '編集中',
     },
+    move: {
+      title: '読みシート', band: '評価関数: {metric}', triggerQ: '手番トリガー', outside: 'トリガー外',
+      candidate: '候補 {n}', candidateText: '手', scoreLabel: '{metric}に照らした点数',
+      josekiTitle: '定跡', decideTitle: '手を決める', quickTitle: '簡易記録', notFound: 'この手は見つかりません',
+      chosen: '選んだ手', decided: '決定済み', undecided: '未決定', quick: '簡易記録', retro: 'あとから記録',
+      listTitle: '手の記録', week: '{date}の週', empty: '手の記録はまだありません', save: '保存',
+      decideLabel: '{situation}の手を決める',
+    },
+    josekiList: {
+      title: '定跡', add: '定跡を足す', principle: '原則', hide: '非表示', show: '表示する', showHidden: '非表示を表示',
+      fromReview: '{date}の感想戦から', empty: '定跡はまだありません', save: '保存',
+    },
     triggers: { title: '手番トリガー', condition: '条件', add: '追加', examples: '例', active: '有効', empty: 'トリガーはまだありません' },
   },
   goals: {

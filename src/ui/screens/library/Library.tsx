@@ -16,6 +16,10 @@ export default function Library() {
       <div className="card p-0">
         <ListRow to="/library/habits" title={ja.habits.list.title} />
         <ListRow to="/library/tasks" title={ja.start.list.title} />
+        <ListRow to="/library/moves" title={ja.board.move.listTitle} />
+        <ListRow to="/library/joseki" title={ja.board.josekiList.title} />
+        <ListRow to="/settings/triggers" title={ja.board.triggers.title} />
+        <ListRow to="/settings/evaluation" title={ja.board.evalForm.title} />
       </div>
     </main>
   );

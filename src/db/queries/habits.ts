@@ -1,5 +1,5 @@
 import { addDays, dayStart } from '../../domain/dates';
-import type { Countermeasure, Habit, HabitLog, LocalDate, ReasonTag, Session, Task, WeeklyCheck } from '../../domain/types';
+import type { Candidate, Countermeasure, Habit, HabitLog, LocalDate, Move, ReasonTag, Session, Task, WeeklyCheck } from '../../domain/types';
 import { db } from '../db';
 
 export interface HomeData {
@@ -12,13 +12,18 @@ export interface HomeData {
   sessions: Session[];
   /** 着手モジュールを使ったことがある */
   startUsed: boolean;
+  /** 習慣・やること・段・手のどれかが1件以上ある（ホームの空の状態の判定） */
+  hasRecords: boolean;
+  /** 作成から7日以内の手と、その候補 */
+  moves: Move[];
+  candidates: Candidate[];
   /** 今日の 1日のしめがある */
   dailyDone: boolean;
 }
 
 /** ホーム用: すべての習慣、today-7 以降の記録、理由タグ（並び順）、今日までのやること、最近のセッション */
 export async function queryHomeData(today: LocalDate): Promise<HomeData> {
-  const [habits, logs, tags, tasks, sessions, taskCount, sessionCount, daily] = await Promise.all([
+  const [habits, logs, tags, tasks, sessions, taskCount, sessionCount, daily, moves, moveCount, goalCount] = await Promise.all([
     db.habits.toArray(),
     db.habitLogs.where('date').aboveOrEqual(addDays(today, -7)).toArray(),
     db.reasonTags.orderBy('order').toArray(),
@@ -27,7 +32,11 @@ export async function queryHomeData(today: LocalDate): Promise<HomeData> {
     db.tasks.count(),
     db.sessions.count(),
     db.dailyChecks.get(today),
+    db.moves.where('createdAt').aboveOrEqual(dayStart(addDays(today, -6))).toArray(),
+    db.moves.count(),
+    db.goals.count(),
   ]);
+  const candidates = await db.candidates.where('moveId').anyOf(moves.map((m) => m.id)).toArray();
   return {
     habits,
     logs,
@@ -36,6 +45,9 @@ export async function queryHomeData(today: LocalDate): Promise<HomeData> {
     sessions,
     startUsed: taskCount > 0 || sessionCount > 0,
     dailyDone: daily !== undefined,
+    hasRecords: habits.length > 0 || taskCount > 0 || moveCount > 0 || goalCount > 0,
+    moves,
+    candidates,
   };
 }
 

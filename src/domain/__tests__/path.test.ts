@@ -19,6 +19,8 @@ function input(p: Partial<PathInput> = {}): PathInput {
     habitLogs: [],
     tasks: [],
     sessions: [],
+    moves: [],
+    candidates: [],
     startUsed: false,
     dailyDone: false,
     dismissed: {},
@@ -189,5 +191,35 @@ describe('buildTodayPath（1日のしめ）', () => {
     const done = buildTodayPath(input({ ...base, dailyDone: true }), NOW);
     expect(done.nextNodeId).toBeNull();
     expect(done.nodes.map((n) => n.state)).toEqual(['done', 'done', 'done']);
+  });
+});
+
+describe('buildTodayPath（決めかけの手）', () => {
+  const move = (id: string, createdAt: number, p: Record<string, unknown> = {}) => ({
+    id,
+    triggerId: null,
+    situation: `局面${id}`,
+    mode: 'full' as const,
+    retro: false,
+    irreversible: false,
+    unreadable: false,
+    chosenCandidateId: null,
+    chosenText: null,
+    decidedAt: null,
+    phase: null,
+    createdAt,
+    ...p,
+  });
+  const cands = [
+    { id: 'c2', moveId: 'm1', position: 2 as const, description: '断る', plus1: null, plus2: null, score: null },
+    { id: 'c1', moveId: 'm1', position: 1 as const, description: '行く', plus1: null, plus2: null, score: null },
+  ];
+
+  it('AC-CORE-05: 決めかけの手を作成の古い順に、習慣とやることより前に並べる', () => {
+    const moves = [move('m2', NOW - 1000), move('m1', NOW - 2 * 86400000), move('old', NOW - 7 * 86400000), move('done', NOW, { decidedAt: NOW })];
+    const p = buildTodayPath(input({ moves, candidates: cands, habits: [habit({ id: 'h' })], tasks: [task()], startUsed: true }), NOW);
+    expect(p.nodes.map((n) => n.id)).toEqual(['decide:m1', 'decide:m2', 'habit:h', 'task:t1', 'daily']);
+    expect(p.nextNodeId).toBe('decide:m1');
+    expect(p.nodes[0]).toMatchObject({ kind: 'decide', situation: '局面m1', candidates: [{ id: 'c1', description: '行く' }, { id: 'c2', description: '断る' }] });
   });
 });

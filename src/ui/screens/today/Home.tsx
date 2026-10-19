@@ -26,6 +26,7 @@ import { CarryCard } from './CarryCard';
 import { ResumeCard } from './ResumeCard';
 import { TaskNodeView } from './TaskNodeView';
 import { DailyNodeView } from './DailyNodeView';
+import { DecideNodeView } from './DecideNodeView';
 import { BoardStrip } from './BoardStrip';
 import { AmountSheet } from './AmountSheet';
 import { HabitNodeView } from './HabitNodeView';
@@ -56,6 +57,8 @@ export default function Home() {
       habitLogs: data.logs,
       tasks: data.tasks,
       sessions: data.sessions,
+      moves: data.moves,
+      candidates: data.candidates,
       startUsed: data.startUsed,
       dailyDone: data.dailyDone,
       dismissed: settings.dismissed,
@@ -64,7 +67,7 @@ export default function Home() {
   );
   const habitById = new Map(data.habits.map((h) => [h.id, h]));
   const unscheduled = unscheduledHabits(data.habits, today);
-  const empty = data.habits.length === 0 && data.tasks.length === 0 && path.interrupts.length === 0;
+  const empty = !data.hasRecords && path.interrupts.length === 0;
   const dismiss = (id: string) => void updateSettings({ dismissed: { ...settings.dismissed, [id]: today } }, Date.now());
 
   return (
@@ -122,6 +125,9 @@ export default function Home() {
                     onAnswer={() => navigate('/daily')}
                   />
                 );
+              }
+              if (node.kind === 'decide') {
+                return <DecideNodeView key={node.id} node={node} isLast={i === path.nodes.length - 1} />;
               }
               if (node.kind === 'task') {
                 return (

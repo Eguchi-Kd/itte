@@ -1,7 +1,20 @@
-// 盤面のリポジトリ（§7.6）【盤】。手（Move）の関数は T21 で足す
+// 盤面のリポジトリ（§7.6）【盤】。感想戦（saveMoveReview）は週次ふりかえり（T28）で足す
 import { MAX_ACTIVE_TRIGGERS, MAX_AVOID, periodsOverlap } from '../../domain/board/board';
+import { filledCandidates, validateCandidates, type CandidateInput } from '../../domain/board/moves';
 import { DomainError } from '../../domain/errors';
-import type { BoardItem, BoardItemType, EpochMs, EvaluationFunction, ID, LocalDate, TurnTrigger } from '../../domain/types';
+import type {
+  BoardItem,
+  BoardItemType,
+  Candidate,
+  EpochMs,
+  EvaluationFunction,
+  ID,
+  Joseki,
+  LocalDate,
+  Move,
+  Phase,
+  TurnTrigger,
+} from '../../domain/types';
 import { db } from '../db';
 
 const newId = () => crypto.randomUUID();
@@ -125,5 +138,110 @@ export async function setTriggerActive(id: ID, active: boolean, _now: EpochMs): 
       throw new DomainError('LIMIT_EXCEEDED', 'errors.triggerLimit');
     }
     await db.turnTriggers.update(id, { active });
+  });
+}
+
+export interface MoveInput {
+  situation: string;
+  triggerId: ID | null;
+  irreversible: boolean;
+  unreadable: boolean;
+  candidates: CandidateInput[];
+  /** 盤面プリセットの実験中に作られた場合の条件 */
+  phase?: Phase | null;
+}
+
+/** 読みシートの手と候補を1トランザクションで作る（I11）。候補は配列順に position 1 から */
+export async function createMove(input: MoveInput, now: EpochMs): Promise<{ move: Move; candidates: Candidate[] }> {
+  const situation = requireText(input.situation, 200, 'situation');
+  const cands = filledCandidates(input.candidates);
+  if (!validateCandidates(cands)) throw new DomainError('VALIDATION', 'errors.candidates');
+  return db.transaction('rw', db.moves, db.candidates, async () => {
+    const move: Move = {
+      id: newId(),
+      triggerId: input.triggerId,
+      situation,
+      mode: 'full',
+      retro: false,
+      irreversible: input.irreversible,
+      unreadable: input.unreadable,
+      chosenCandidateId: null,
+      chosenText: null,
+      decidedAt: null,
+      phase: input.phase ?? null,
+      createdAt: now,
+    };
+    const candidates: Candidate[] = cands.map((c, i) => ({
+      id: newId(),
+      moveId: move.id,
+      position: (i + 1) as 1 | 2 | 3,
+      description: c.description.trim(),
+      plus1: c.plus1?.trim() ? c.plus1.trim() : null,
+      plus2: c.plus2?.trim() ? c.plus2.trim() : null,
+      score: c.score,
+    }));
+    await db.moves.add(move);
+    await db.candidates.bulkAdd(candidates);
+    return { move, candidates };
+  });
+}
+
+/** 簡易記録（D31）。mode='quick'、decidedAt=now、候補0件で chosenText 必須 */
+export async function createQuickMove(
+  input: { situation: string; chosenText: string; retro: boolean; phase?: Phase | null },
+  now: EpochMs,
+): Promise<Move> {
+  const move: Move = {
+    id: newId(),
+    triggerId: null,
+    situation: requireText(input.situation, 200, 'situation'),
+    mode: 'quick',
+    retro: input.retro,
+    irreversible: false,
+    unreadable: false,
+    chosenCandidateId: null,
+    chosenText: requireText(input.chosenText, 200, 'chosenText'),
+    decidedAt: now,
+    phase: input.phase ?? null,
+    createdAt: now,
+  };
+  await db.moves.add(move);
+  return move;
+}
+
+/** 手を決める。候補は同じ手のものだけ（I12） */
+export async function decideMove(moveId: ID, candidateId: ID, now: EpochMs): Promise<Move> {
+  return db.transaction('rw', db.moves, db.candidates, async () => {
+    const move = await db.moves.get(moveId);
+    if (!move) throw new DomainError('NOT_FOUND', 'errors.notFound', { moveId });
+    const cand = await db.candidates.get(candidateId);
+    if (!cand || cand.moveId !== moveId || move.mode !== 'full') {
+      throw new DomainError('VALIDATION', 'errors.candidates', { moveId, candidateId });
+    }
+    const next: Move = { ...move, chosenCandidateId: candidateId, decidedAt: now };
+    await db.moves.put(next);
+    return next;
+  });
+}
+
+/** 定跡の追加・編集・非表示 */
+export async function saveJoseki(
+  input: { id?: ID; principle: string; archived?: boolean; moveReviewId?: ID | null },
+  now: EpochMs,
+): Promise<Joseki> {
+  const principle = requireText(input.principle, 100, 'principle');
+  return db.transaction('rw', db.joseki, async () => {
+    const existing = input.id ? await db.joseki.get(input.id) : undefined;
+    const j: Joseki = {
+      id: existing?.id ?? newId(),
+      principle,
+      origin: existing?.origin ?? (input.moveReviewId ? 'review' : 'initial'),
+      moveReviewId: existing?.moveReviewId ?? input.moveReviewId ?? null,
+      archived: input.archived ?? existing?.archived ?? false,
+      order: existing?.order ?? (await db.joseki.count()),
+      createdAt: existing?.createdAt ?? now,
+    };
+    await db.joseki.put(j);
+    return j;
   });
 }

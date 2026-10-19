@@ -4,6 +4,11 @@ import { AppLayout } from './ui/screens/AppLayout';
 
 // 画面はルートごとに遅延読み込みする（§6.1.2）。T13 以降のモジュールはまだ空の画面
 const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
+const MoveList = lazy(() => import('./ui/screens/moves/MoveList'));
+const JosekiList = lazy(() => import('./ui/screens/moves/JosekiList'));
+const MoveDecide = lazy(() => import('./ui/screens/moves/MoveDecide'));
+const MoveQuick = lazy(() => import('./ui/screens/moves/MoveQuick'));
+const MoveNew = lazy(() => import('./ui/screens/moves/MoveNew'));
 const TriggerSettings = lazy(() => import('./ui/screens/board/TriggerSettings'));
 const EvaluationSettings = lazy(() => import('./ui/screens/board/EvaluationSettings'));
 const BoardItemEdit = lazy(() => import('./ui/screens/board/BoardItemEdit'));
@@ -25,9 +30,6 @@ const HabitList = lazy(() => import('./ui/screens/habits/HabitList'));
 const Library = lazy(() => import('./ui/screens/library/Library'));
 
 const placeholderPaths = [
-  '/moves/new',
-  '/moves/quick',
-  '/moves/:id',
   '/goals/new',
   '/goals/:id',
   '/goals/:id/kizami',
@@ -43,8 +45,6 @@ const placeholderPaths = [
   '/review/experiment',
   '/library/goals',
   '/library/metrics',
-  '/library/moves',
-  '/library/joseki',
   '/library/history',
   '/settings',
   '/settings/data',
@@ -54,6 +54,11 @@ export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
+      { path: '/library/moves', element: <MoveList /> },
+      { path: '/library/joseki', element: <JosekiList /> },
+      { path: '/moves/:id', element: <MoveDecide /> },
+      { path: '/moves/quick', element: <MoveQuick /> },
+      { path: '/moves/new', element: <MoveNew /> },
       { path: '/settings/triggers', element: <TriggerSettings /> },
       { path: '/settings/evaluation', element: <EvaluationSettings /> },
       { path: '/board/items/:id', element: <BoardItemEdit /> },
