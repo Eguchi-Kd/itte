@@ -1,4 +1,5 @@
 import type { HabitDraft } from '../../domain/habits/validate';
+import type { TaskInput } from '../../domain/start/tasks';
 import type { ImmutableTable, Settings } from '../../domain/types';
 import { db } from '../db';
 import { updateSettings } from '../repo/common';
@@ -105,3 +106,14 @@ export function habitDraft(p: Partial<HabitDraft> = {}): HabitDraft {
 
 /** 画面のテストから DB の中身を確かめるための入口（画面のコードからは使わない） */
 export { db as testDb };
+
+/** ラフ登録の入力（B 条件で有効な値） */
+export function taskInput(p: Partial<TaskInput> = {}): TaskInput {
+  return {
+    title: '卒論の序章',
+    roughVersion: '見出しだけ',
+    firstAction: 'エディタを開く',
+    plannedFor: '2026-10-18',
+    ...p,
+  };
+}

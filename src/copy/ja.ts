@@ -241,6 +241,7 @@ export const ja = {
     daysRequired: '曜日を1つ以上選んでください',
     timeOrCue: '時刻かきっかけの、どちらかを入れてください',
     unknown: '保存できませんでした。もう一度試してください',
+    consumption: '0〜1440 の整数を入れてください',
   },
 } as const;
 
