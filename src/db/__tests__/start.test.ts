@@ -13,6 +13,7 @@ import {
   startSession,
   sweepAbandoned,
 } from '../repo/start';
+import { createGoal, saveMetric } from '../repo/goals';
 import { codeOfRejection, NOW, resetSeeded, taskInput } from './helpers';
 
 const MIN = 60_000;
@@ -113,13 +114,30 @@ describe('セッション', () => {
   });
 
   it('感情予想があれば AFFECT 予想を台帳つきで追記し、終了で実際の値を1回だけ追記する', async () => {
-    const t = await createTask(input({ goalId: 'g1' }), true, NOW);
+    const m = await saveMetric({ name: '章数', unit: '章', direction: 'HIGHER_IS_BETTER', collectionMethod: '数える', verifiable: true }, NOW);
+    const g = await createGoal(
+      { metricId: m.id, title: '章', targetValue: 3, comparator: 'GTE', deadline: '2026-10-25', onMet: 'a', onUnmet: 'b', probability: 50, predictedValue: 3 },
+      NOW,
+    );
+    const t = await createTask(input({ goalId: g.id }), true, NOW);
     const s = await startSession(t.id, true, { intensity: 6, durationMin: 10 }, NOW);
     const p = await db.predictions.get(s.affectPredictionId ?? '');
-    expect(p).toMatchObject({ goalId: 'g1', kind: 'AFFECT', value: { intensity: 6, durationMin: 10 }, sessionId: s.id });
+    expect(p).toMatchObject({ goalId: g.id, kind: 'AFFECT', value: { intensity: 6, durationMin: 10 }, sessionId: s.id });
     await endSession(s.id, 'continue', null, { intensity: 3, durationMin: 5 }, NOW + 10 * MIN);
     expect(await db.affectActuals.count()).toBe(1);
-    expect(await verifyDbLedger()).toEqual({ ok: true, count: 2 });
+    // 段の作成（コミット2件と OUTCOME 予想）＋ AFFECT 予想 ＋ 実際の値
+    expect(await verifyDbLedger()).toEqual({ ok: true, count: 5 });
+  });
+
+  it('期限を過ぎた段に紐づいたやることでは、感情予想つきの開始は ORDER_VIOLATION', async () => {
+    const m = await saveMetric({ name: '章数', unit: '章', direction: 'HIGHER_IS_BETTER', collectionMethod: '数える', verifiable: true }, NOW);
+    const g = await createGoal(
+      { metricId: m.id, title: '章', targetValue: 3, comparator: 'GTE', deadline: '2026-10-15', onMet: 'a', onUnmet: 'b', probability: 50, predictedValue: 3 },
+      NOW - 10 * 1440 * MIN,
+    );
+    const t = await createTask(input({ goalId: g.id }), true, NOW);
+    expect(await codeOfRejection(startSession(t.id, true, { intensity: 6, durationMin: 10 }, NOW))).toBe('ORDER_VIOLATION');
+    await startSession(t.id, true, null, NOW);
   });
 });
 

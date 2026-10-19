@@ -286,6 +286,10 @@ export const ja = {
     timeOrCue: '時刻かきっかけの、どちらかを入れてください',
     unknown: '保存できませんでした。もう一度試してください',
     consumption: '0〜1440 の整数を入れてください',
+    notDue: '期限を過ぎてから判定します',
+    unmetDetail: 'かけた時間と失ったものを入れてください',
+    orderViolation: '期限を過ぎた段には予想を足せません',
+    hideRoot: '最上位の段は非表示にできません',
   },
 } as const;
 

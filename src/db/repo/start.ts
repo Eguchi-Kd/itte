@@ -17,6 +17,8 @@ import type {
 } from '../../domain/types';
 import { db } from '../db';
 import { appendImmutable } from '../ledger';
+import { assertCanPredict } from './goals';
+import { logicalDate } from '../../domain/dates';
 
 const newId = () => crypto.randomUUID();
 
@@ -114,8 +116,10 @@ export async function startSession(
   affect: AffectPredictionValue | null,
   now: EpochMs,
 ): Promise<Session> {
-  return db.transaction('rw', [db.tasks, db.sessions, db.predictions, db.ledger], async () => {
+  return db.transaction('rw', [db.tasks, db.sessions, db.goals, db.judgments, db.predictions, db.ledger], async () => {
     const task = await requireTask(taskId);
+    // 予想は段が OPEN で判定がなく期限内のときだけ（I5）
+    if (affect && task.goalId) await assertCanPredict(task.goalId, logicalDate(now));
     const open = (await db.sessions.toArray()).filter((s) => s.endedAt === null);
     for (const s of open) await db.sessions.update(s.id, { endedAt: now, outcome: 'stopped' });
 
