@@ -27,6 +27,10 @@ export interface PathInput {
   tasks: readonly Task[];
   /** 少なくとも今日始まったセッションと、終わっていないセッション */
   sessions: readonly Session[];
+  /** 着手モジュールを使ったことがある（やることかセッションが1件以上） */
+  startUsed: boolean;
+  /** 今日の 1日のしめ（DailyCheck）がある */
+  dailyDone: boolean;
   /** 割り込みカード ID → 「あとで」を押した論理日 */
   dismissed: Record<string, LocalDate>;
 }
@@ -58,7 +62,13 @@ export interface TaskPathNode {
   title: string;
 }
 
-export type PathNode = HabitPathNode | TaskPathNode;
+export interface DailyPathNode {
+  id: 'daily';
+  kind: 'daily';
+  state: PathNodeState;
+}
+
+export type PathNode = HabitPathNode | TaskPathNode | DailyPathNode;
 
 export type InterruptCardId = 'resume' | 'reason' | 'carry' | 'integrity' | 'backup' | 'install';
 
@@ -152,6 +162,9 @@ export function buildTodayPath(input: PathInput, now: EpochMs): TodayPath {
       title: task.title,
     });
   }
+
+  // 6: 1日のしめ（着手モジュールを使ったことがあるとき）
+  if (input.startUsed) nodes.push({ id: 'daily', kind: 'daily', state: input.dailyDone ? 'done' : 'todo' });
 
   const next = nodes.find((n) => n.state !== 'done') ?? null;
   if (next) next.state = 'next';

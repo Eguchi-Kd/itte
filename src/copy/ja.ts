@@ -160,6 +160,10 @@ export const ja = {
       edit: '編集', save: '保存', moveToday: '今日に移す',
     },
     outcome: { continued: '続けた', stopped: '止めた', abandoned: '途中で止まった', running: '進行中' },
+    escape: {
+      title: '逃げた', record: '記録する', related: '関連するやること',
+    },
+    daily: { title: '1日のしめ', minutes: '分' },
     timer: {
       remaining: '残り {mmss}', docTitle: '{mmss} {app}', blocker: '分からないこと',
       stuckChoices: '詰まったときの進め方', notFound: 'このセッションは見つかりません',

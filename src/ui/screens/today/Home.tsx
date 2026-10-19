@@ -25,6 +25,7 @@ import { fill } from '../../../copy/fill';
 import { CarryCard } from './CarryCard';
 import { ResumeCard } from './ResumeCard';
 import { TaskNodeView } from './TaskNodeView';
+import { DailyNodeView } from './DailyNodeView';
 import { AmountSheet } from './AmountSheet';
 import { HabitNodeView } from './HabitNodeView';
 import { PastRecordsSheet } from './PastRecordsSheet';
@@ -54,6 +55,8 @@ export default function Home() {
       habitLogs: data.logs,
       tasks: data.tasks,
       sessions: data.sessions,
+      startUsed: data.startUsed,
+      dailyDone: data.dailyDone,
       dismissed: settings.dismissed,
     },
     now,
@@ -107,6 +110,16 @@ export default function Home() {
         <section aria-label={ja.today.path}>
           <ol className="flex flex-col" data-testid="today-path">
             {path.nodes.map((node, i) => {
+              if (node.kind === 'daily') {
+                return (
+                  <DailyNodeView
+                    key={node.id}
+                    state={node.state}
+                    isLast={i === path.nodes.length - 1}
+                    onAnswer={() => navigate('/daily')}
+                  />
+                );
+              }
               if (node.kind === 'task') {
                 return (
                   <TaskNodeView

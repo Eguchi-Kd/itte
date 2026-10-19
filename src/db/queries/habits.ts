@@ -10,18 +10,33 @@ export interface HomeData {
   tasks: Task[];
   /** 前日の論理日の始まり以降に始まったセッション */
   sessions: Session[];
+  /** 着手モジュールを使ったことがある */
+  startUsed: boolean;
+  /** 今日の 1日のしめがある */
+  dailyDone: boolean;
 }
 
 /** ホーム用: すべての習慣、today-7 以降の記録、理由タグ（並び順）、今日までのやること、最近のセッション */
 export async function queryHomeData(today: LocalDate): Promise<HomeData> {
-  const [habits, logs, tags, tasks, sessions] = await Promise.all([
+  const [habits, logs, tags, tasks, sessions, taskCount, sessionCount, daily] = await Promise.all([
     db.habits.toArray(),
     db.habitLogs.where('date').aboveOrEqual(addDays(today, -7)).toArray(),
     db.reasonTags.orderBy('order').toArray(),
     db.tasks.where('plannedFor').belowOrEqual(today).toArray(),
     db.sessions.where('startedAt').aboveOrEqual(dayStart(addDays(today, -1))).toArray(),
+    db.tasks.count(),
+    db.sessions.count(),
+    db.dailyChecks.get(today),
   ]);
-  return { habits, logs, tags, tasks: tasks.filter((t) => t.archivedAt === null), sessions };
+  return {
+    habits,
+    logs,
+    tags,
+    tasks: tasks.filter((t) => t.archivedAt === null),
+    sessions,
+    startUsed: taskCount > 0 || sessionCount > 0,
+    dailyDone: daily !== undefined,
+  };
 }
 
 export function queryHabit(id: string): Promise<Habit | undefined> {

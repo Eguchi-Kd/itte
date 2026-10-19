@@ -19,6 +19,8 @@ function input(p: Partial<PathInput> = {}): PathInput {
     habitLogs: [],
     tasks: [],
     sessions: [],
+    startUsed: false,
+    dailyDone: false,
     dismissed: {},
     ...p,
   };
@@ -169,5 +171,23 @@ describe('割り込みカード（再開・持ち越し）', () => {
     expect(p.interrupts[0]).toMatchObject({ sessionId: 's1', startedAt: NOW - 4 * 60_000, remainingMs: 6 * 60_000 });
     const noRun = buildTodayPath(input({ tasks, habits: h }), NOW);
     expect(noRun.interrupts.map((c) => c.id)).toEqual(['reason', 'carry']);
+  });
+});
+
+describe('buildTodayPath（1日のしめ）', () => {
+  it('AC-CORE-05: 着手モジュールを使ったことがあるときだけ、しめのノードを最後に置く', () => {
+    expect(buildTodayPath(input({ habits: [habit({ id: 'h' })] }), NOW).nodes.map((n) => n.kind)).toEqual(['habit']);
+    const p = buildTodayPath(input({ habits: [habit({ id: 'h' })], tasks: [task()], startUsed: true }), NOW);
+    expect(p.nodes.map((n) => n.kind)).toEqual(['habit', 'task', 'daily']);
+    expect(p.nodes[2]).toMatchObject({ id: 'daily', state: 'todo' });
+  });
+
+  it('AC-CORE-05: 習慣とやることが済んでいれば、しめが next。しめも済めば nextNodeId は null', () => {
+    const started = session({ taskId: 't1', startedAt: NOW - 3600_000, endedAt: NOW - 3000_000, outcome: 'stopped' });
+    const base = { habits: [habit({ id: 'h' })], habitLogs: [log(TODAY, true, { habitId: 'h' })], tasks: [task()], sessions: [started], startUsed: true };
+    expect(buildTodayPath(input(base), NOW).nextNodeId).toBe('daily');
+    const done = buildTodayPath(input({ ...base, dailyDone: true }), NOW);
+    expect(done.nextNodeId).toBeNull();
+    expect(done.nodes.map((n) => n.state)).toEqual(['done', 'done', 'done']);
   });
 });

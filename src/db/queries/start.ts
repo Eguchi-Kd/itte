@@ -26,6 +26,11 @@ export async function queryTaskDetail(id: string): Promise<TaskDetailData> {
   };
 }
 
+/** 逃避ログの「関連するやること」: 予定日が今日か昨日のやること */
+export function queryRecentTasks(today: string, yesterday: string): Promise<Task[]> {
+  return db.tasks.where('plannedFor').between(yesterday, today, true, true).toArray();
+}
+
 export function queryTasks(): Promise<Task[]> {
   return db.tasks.orderBy('plannedFor').toArray();
 }
