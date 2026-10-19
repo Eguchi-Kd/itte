@@ -289,6 +289,28 @@ export const ja = {
     keep: '続ける', reduce: '量を減らす', quit: 'やめる', quitNote: 'やめるのも判断です',
     patternLine: '{label}は {n}回中{done}回（全体 {overall}%）', counter: 'この条件への対策',
     bottleneck: 'いちばん多い見落とし: {label}', reviewEval: '評価関数を見直す',
+    tab: 'ふりかえり', thisWeek: '今週のふりかえり', weekOf: '{date}の週', recorded: '記録済み', reopen: '見直す',
+    pastWeeks: 'これまでの週', numbers: '数字', calibration: '較正', patterns: '傾向と対策', experiment: '実験',
+    notStarted: '未完了',
+    titles: { facts: '今週の数字', moves: '感想戦', habits: '習慣', patterns: '傾向と対策', stalls: '足踏み', close: 'しめ' },
+    fact: {
+      habitRow: '{name} {done}/{scheduled} 回', sessions: 'セッション {n}件', stucks: '詰まり {n}件', moves: '手 {n}件',
+      judgments: '判定 {n}件', escapes: '逃避ログ {n}件',
+    },
+    move: {
+      candidates: '候補', chosen: '選んだ手', chosenMark: '{text}（選んだ手）', undecided: '未決定', rating: '評価', note: 'メモ',
+      promoteLabel: '定跡にする', principle: '原則の1行', save: '保存',
+    },
+    habit: {
+      purpose: '目的: {purpose}', graduateQ: '定着済みに移しますか', save: '保存', decisionQ: 'これからどうする?',
+    },
+    pattern: { save: '保存', registered: '登録した対策' },
+    close: {
+      badRate: '悪手の割合 {r}%（{total}件中{bad}件）', blindRow: '{label} {n}件', evalLeft: '評価関数の残り {n}日',
+      finish: '記録する', noMoves: '感想戦をした手 0件',
+    },
+    conditions: { board: '盤面が見えている', eval: '評価関数が一つ', trigger: '手番がはっきりしている', reading: '読み' },
+    patternsScreen: { thisWeek: '今週 {done}/{scheduled} 回', lastWeek: '先週 {done}/{scheduled} 回' },
   },
   experiment: {
     phaseA: 'A（比較のための期間）', phaseB: 'B（すべての機能）',

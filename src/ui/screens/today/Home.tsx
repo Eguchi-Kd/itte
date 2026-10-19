@@ -28,6 +28,7 @@ import { TaskNodeView } from './TaskNodeView';
 import { DailyNodeView } from './DailyNodeView';
 import { DecideNodeView } from './DecideNodeView';
 import { JudgeNodeView } from './JudgeNodeView';
+import { WeeklyNodeView } from './WeeklyNodeView';
 import { BoardStrip } from './BoardStrip';
 import { AmountSheet } from './AmountSheet';
 import { HabitNodeView } from './HabitNodeView';
@@ -60,6 +61,7 @@ export default function Home() {
       sessions: data.sessions,
       goals: data.goals,
       judgmentRequests: data.judgmentRequests,
+      weeklyRuns: data.weeklyRuns,
       moves: data.moves,
       candidates: data.candidates,
       startUsed: data.startUsed,
@@ -128,6 +130,9 @@ export default function Home() {
                     onAnswer={() => navigate('/daily')}
                   />
                 );
+              }
+              if (node.kind === 'weekly') {
+                return <WeeklyNodeView key={node.id} node={node} isLast={i === path.nodes.length - 1} />;
               }
               if (node.kind === 'judge') {
                 return <JudgeNodeView key={node.id} node={node} isLast={i === path.nodes.length - 1} />;

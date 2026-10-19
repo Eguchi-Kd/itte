@@ -11,7 +11,8 @@ export type FeedbackEvent =
   | { type: 'escape' }
   | { type: 'daily' }
   | { type: 'measurement' }
-  | { type: 'saved' };
+  | { type: 'saved' }
+  | { type: 'weeklyReview' };
 
 export interface FeedbackSpec {
   sound: 'recorded';
@@ -31,6 +32,7 @@ const COPY_KEY: Record<FeedbackEvent['type'], string> = {
   daily: 'feedback.recorded',
   measurement: 'feedback.recorded',
   saved: 'feedback.saved',
+  weeklyReview: 'feedback.reviewDone',
 };
 
 export function feedbackFor(e: FeedbackEvent): FeedbackSpec {

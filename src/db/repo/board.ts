@@ -1,4 +1,4 @@
-// 盤面のリポジトリ（§7.6）【盤】。感想戦（saveMoveReview）は週次ふりかえり（T28）で足す
+// 盤面のリポジトリ（§7.6）【盤】
 import { MAX_ACTIVE_TRIGGERS, MAX_AVOID, periodsOverlap } from '../../domain/board/board';
 import { filledCandidates, validateCandidates, type CandidateInput } from '../../domain/board/moves';
 import { DomainError } from '../../domain/errors';
@@ -12,6 +12,7 @@ import type {
   Joseki,
   LocalDate,
   Move,
+  MoveReview,
   Phase,
   TurnTrigger,
 } from '../../domain/types';
@@ -243,5 +244,40 @@ export async function saveJoseki(
     };
     await db.joseki.put(j);
     return j;
+  });
+}
+
+export interface MoveReviewInput {
+  moveId: ID;
+  outcome: string | null;
+  judgmentOk: boolean;
+  rating: MoveReview['rating'];
+  blindSpot: MoveReview['blindSpot'];
+  note: string | null;
+  /** 「定跡にする」がオンなら、原則の1行 */
+  promoteToJoseki?: string | null;
+}
+
+/** 感想戦の保存（同じ手の2回目は上書き）。悪手なら見落とし必須（I13）。定跡への昇格は同じトランザクション */
+export async function saveMoveReview(input: MoveReviewInput, now: EpochMs): Promise<MoveReview> {
+  if (input.rating === 'bad' && !input.blindSpot) throw new DomainError('VALIDATION', 'errors.badNeedsBlindSpot');
+  const opt = (s: string | null) => (s && s.trim() ? s.trim() : null);
+  return db.transaction('rw', db.moves, db.moveReviews, db.joseki, async () => {
+    if (!(await db.moves.get(input.moveId))) throw new DomainError('NOT_FOUND', 'errors.notFound', { moveId: input.moveId });
+    const existing = await db.moveReviews.where('moveId').equals(input.moveId).first();
+    const review: MoveReview = {
+      id: existing?.id ?? newId(),
+      moveId: input.moveId,
+      outcome: opt(input.outcome),
+      judgmentOk: input.judgmentOk,
+      rating: input.rating,
+      blindSpot: input.rating === 'bad' ? input.blindSpot : (input.blindSpot ?? null),
+      note: opt(input.note),
+      reviewedAt: now,
+    };
+    await db.moveReviews.put(review);
+    const principle = opt(input.promoteToJoseki ?? null);
+    if (principle) await saveJoseki({ principle, moveReviewId: review.id }, now);
+    return review;
   });
 }

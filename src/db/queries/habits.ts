@@ -12,6 +12,7 @@ import type {
   Session,
   Task,
   WeeklyCheck,
+  WeeklyReviewRun,
 } from '../../domain/types';
 import { db } from '../db';
 
@@ -27,6 +28,8 @@ export interface HomeData {
   startUsed: boolean;
   /** 習慣・やること・段・手のどれかが1件以上ある（ホームの空の状態の判定） */
   hasRecords: boolean;
+  /** 週次ふりかえりの実施記録 */
+  weeklyRuns: WeeklyReviewRun[];
   /** 判定前の段と判定待ち */
   goals: Goal[];
   judgmentRequests: JudgmentRequest[];
@@ -39,7 +42,7 @@ export interface HomeData {
 
 /** ホーム用: すべての習慣、today-7 以降の記録、理由タグ（並び順）、今日までのやること、最近のセッション */
 export async function queryHomeData(today: LocalDate): Promise<HomeData> {
-  const [habits, logs, tags, tasks, sessions, taskCount, sessionCount, daily, moves, moveCount, goalCount, goals, judgmentRequests] = await Promise.all([
+  const [habits, logs, tags, tasks, sessions, taskCount, sessionCount, daily, moves, moveCount, goalCount, goals, judgmentRequests, weeklyRuns] = await Promise.all([
     db.habits.toArray(),
     db.habitLogs.where('date').aboveOrEqual(addDays(today, -7)).toArray(),
     db.reasonTags.orderBy('order').toArray(),
@@ -53,6 +56,7 @@ export async function queryHomeData(today: LocalDate): Promise<HomeData> {
     db.goals.count(),
     db.goals.where('status').equals('OPEN').toArray(),
     db.judgmentRequests.toArray(),
+    db.weeklyReviewRuns.toArray(),
   ]);
   const candidates = await db.candidates.where('moveId').anyOf(moves.map((m) => m.id)).toArray();
   return {
@@ -66,6 +70,7 @@ export async function queryHomeData(today: LocalDate): Promise<HomeData> {
     hasRecords: habits.length > 0 || taskCount > 0 || moveCount > 0 || goalCount > 0,
     goals,
     judgmentRequests,
+    weeklyRuns,
     moves,
     candidates,
   };

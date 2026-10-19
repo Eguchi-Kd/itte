@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ja } from '../../copy/ja';
 import { habitDraft, testDb as db } from '../../db/__tests__/helpers';
 import { recordDone, saveHabit } from '../../db/repo/habits';
+import { upsertWeeklyReviewRun } from '../../db/repo/common';
 import { NOW, renderAt, resetDb } from './testUtils';
 
 const DAY = 86400000;
@@ -50,6 +51,7 @@ describe('ホーム', () => {
   });
 
   it('記録済みのノードは「記録済み {量}」「取り消す」「追加で記録」を持ち、追加で量を足す', async () => {
+    await upsertWeeklyReviewRun('2026-10-12', { completed: true }, NOW);
     const h = await saveHabit(habitDraft({ unit: '分', amount: 10 }), NOW);
     await recordDone(h.id, '2026-10-18', undefined, NOW);
     renderAt('/');

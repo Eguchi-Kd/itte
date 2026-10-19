@@ -1,6 +1,6 @@
 // 共通のリポジトリ関数（§7.6）
 import { logicalDate } from '../../domain/dates';
-import type { EpochMs, Settings } from '../../domain/types';
+import type { EpochMs, LocalDate, Settings, WeeklyReviewRun } from '../../domain/types';
 import { db } from '../db';
 import { defaultSettings } from '../seed';
 
@@ -39,4 +39,24 @@ export async function completeOnboarding(
   now: EpochMs,
 ): Promise<Settings> {
   return updateSettings({ onboarded: true, persona, personaScores: scores }, now);
+}
+
+/** 週次ふりかえりの開始・カーソル更新・完了（§7.6）。週ごとに1件 */
+export async function upsertWeeklyReviewRun(
+  weekStart: LocalDate,
+  patch: { cursor?: number; completed?: boolean },
+  now: EpochMs,
+): Promise<WeeklyReviewRun> {
+  return db.transaction('rw', db.weeklyReviewRuns, async () => {
+    const existing = await db.weeklyReviewRuns.where('weekStart').equals(weekStart).first();
+    const run: WeeklyReviewRun = {
+      id: existing?.id ?? crypto.randomUUID(),
+      weekStart,
+      startedAt: existing?.startedAt ?? now,
+      completedAt: patch.completed ? now : (existing?.completedAt ?? null),
+      cursor: patch.cursor ?? existing?.cursor ?? 0,
+    };
+    await db.weeklyReviewRuns.put(run);
+    return run;
+  });
 }

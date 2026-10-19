@@ -6,6 +6,7 @@ import { ja } from '../../copy/ja';
 import { taskInput, testDb as db } from '../../db/__tests__/helpers';
 import { onLaunch } from '../../db/init';
 import { createTask, startSession } from '../../db/repo/start';
+import { upsertWeeklyReviewRun } from '../../db/repo/common';
 import type { ID } from '../../domain/types';
 import { routes } from '../../routes';
 import { LaunchContext } from '../hooks/launchContext';
@@ -112,6 +113,7 @@ describe('1日のしめ', () => {
   });
 
   it('着手モジュールを使ったことがあるとき、ホームの道の最後に「1日のしめ」を出し、答えると記録済みになる', async () => {
+    await upsertWeeklyReviewRun('2026-10-12', { completed: true }, NOW);
     await createTask(taskInput({ plannedFor: '2026-10-17' }), true, NOW - 1440 * MIN);
     const { router } = renderAt('/');
     const node = await screen.findByTestId('daily-node');

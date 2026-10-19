@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { undecidedMoves, validateCandidates } from '../../domain/board/moves';
 import { db } from '../db';
-import { createMove, createQuickMove, decideMove, saveJoseki } from '../repo/board';
+import { createMove, createQuickMove, decideMove, saveJoseki, saveMoveReview } from '../repo/board';
+import { upsertWeeklyReviewRun } from '../repo/common';
 import { codeOfRejection, NOW, resetSeeded } from './helpers';
 
 const DAY = 86400000;
@@ -89,5 +90,54 @@ describe('定跡', () => {
     await saveJoseki({ id: j.id, principle: '迷ったら一晩おく' }, NOW);
     await saveJoseki({ id: j.id, principle: '迷ったら一晩おく', archived: true }, NOW);
     expect(await db.joseki.get(j.id)).toMatchObject({ principle: '迷ったら一晩おく', archived: true });
+  });
+});
+
+describe('感想戦', () => {
+  async function aMove() {
+    return (
+      await createMove(
+        { situation: '誘い', triggerId: null, irreversible: false, unreadable: false, candidates: [cand('行く'), cand('断る')] },
+        NOW,
+      )
+    ).move;
+  }
+
+  it('AC-BOARD-15: rating=bad のとき見落としを選ばないと保存できない。判断の妥当さと結果は別々に保存される', async () => {
+    const m = await aMove();
+    const base = { moveId: m.id, outcome: '疲れた', judgmentOk: true, note: null };
+    expect(await codeOfRejection(saveMoveReview({ ...base, rating: 'bad', blindSpot: null }, NOW))).toBe('VALIDATION');
+    expect(await db.moveReviews.count()).toBe(0);
+    const r = await saveMoveReview({ ...base, rating: 'bad', blindSpot: 'reading' }, NOW);
+    expect(r).toMatchObject({ judgmentOk: true, outcome: '疲れた', rating: 'bad', blindSpot: 'reading' });
+  });
+
+  it('AC-BOARD-16: 同じ手の感想戦を2回保存すると上書きされる', async () => {
+    const m = await aMove();
+    const first = await saveMoveReview({ moveId: m.id, outcome: null, judgmentOk: false, rating: 'neutral', blindSpot: null, note: null }, NOW);
+    const second = await saveMoveReview({ moveId: m.id, outcome: '結果', judgmentOk: true, rating: 'good', blindSpot: null, note: 'メモ' }, NOW + 1000);
+    expect(await db.moveReviews.count()).toBe(1);
+    expect(second.id).toBe(first.id);
+    expect(await db.moveReviews.get(first.id)).toMatchObject({ rating: 'good', judgmentOk: true, outcome: '結果', reviewedAt: NOW + 1000 });
+  });
+
+  it('AC-BOARD-17: 「定跡にする」で、moveReviewId 付きの Joseki が作られる', async () => {
+    const m = await aMove();
+    const r = await saveMoveReview(
+      { moveId: m.id, outcome: null, judgmentOk: true, rating: 'bad', blindSpot: 'trigger', note: null, promoteToJoseki: '誘いは一晩おいて返す' },
+      NOW,
+    );
+    const j = (await db.joseki.toArray()).find((x) => x.principle === '誘いは一晩おいて返す');
+    expect(j).toMatchObject({ origin: 'review', moveReviewId: r.id, archived: false });
+  });
+});
+
+describe('週次ふりかえりの進み具合', () => {
+  it('開始・カーソル更新・完了を週ごとに1件で持つ', async () => {
+    const a = await upsertWeeklyReviewRun('2026-10-12', { cursor: 0 }, NOW);
+    await upsertWeeklyReviewRun('2026-10-12', { cursor: 3 }, NOW + 1000);
+    const done = await upsertWeeklyReviewRun('2026-10-12', { completed: true, cursor: 5 }, NOW + 2000);
+    expect(await db.weeklyReviewRuns.count()).toBe(1);
+    expect(done).toMatchObject({ id: a.id, startedAt: NOW, completedAt: NOW + 2000, cursor: 5 });
   });
 });

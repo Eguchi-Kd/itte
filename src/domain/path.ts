@@ -3,6 +3,7 @@
 import { undecidedMoves } from './board/moves';
 import { pendingJudgments } from './goals/deadlines';
 import { formatIntention } from './habits/formatIntention';
+import { reviewTargetWeek } from './review/weekly';
 import { pendingReasonPrompts, type ReasonPrompt } from './habits/reasons';
 import { isScheduled } from './habits/schedule';
 import { weekCount } from './habits/stats';
@@ -21,6 +22,7 @@ import type {
   Persona,
   Session,
   Task,
+  WeeklyReviewRun,
 } from './types';
 
 /** 道に効く機能フラグ（§9.2 の Flags の一部。実験ランナーは T30 で computeFlags から渡す） */
@@ -49,6 +51,8 @@ export interface PathInput {
   moves: readonly Move[];
   /** moves の候補 */
   candidates: readonly Candidate[];
+  /** 週次ふりかえりの実施記録 */
+  weeklyRuns: readonly WeeklyReviewRun[];
   /** 着手モジュールを使ったことがある（やることかセッションが1件以上） */
   startUsed: boolean;
   /** 今日の 1日のしめ（DailyCheck）がある */
@@ -102,13 +106,20 @@ export interface DecidePathNode {
   candidates: { id: ID; description: string }[];
 }
 
+export interface WeeklyPathNode {
+  id: 'weekly';
+  kind: 'weekly';
+  state: PathNodeState;
+  weekStart: LocalDate;
+}
+
 export interface DailyPathNode {
   id: 'daily';
   kind: 'daily';
   state: PathNodeState;
 }
 
-export type PathNode = JudgePathNode | DecidePathNode | HabitPathNode | TaskPathNode | DailyPathNode;
+export type PathNode = JudgePathNode | DecidePathNode | HabitPathNode | TaskPathNode | WeeklyPathNode | DailyPathNode;
 
 export type InterruptCardId = 'resume' | 'reason' | 'carry' | 'integrity' | 'backup' | 'install';
 
@@ -225,6 +236,13 @@ export function buildTodayPath(input: PathInput, now: EpochMs): TodayPath {
       label: flags.roughStart && task.nextStep ? task.nextStep : task.title,
       title: task.title,
     });
+  }
+
+  // 5: 週次ふりかえり（金曜4:00〜翌週火曜4:00、D21）。完了したら done で残す
+  const weekStart = reviewTargetWeek(today);
+  if (weekStart) {
+    const run = input.weeklyRuns.find((r) => r.weekStart === weekStart);
+    nodes.push({ id: 'weekly', kind: 'weekly', state: run?.completedAt ? 'done' : 'todo', weekStart });
   }
 
   // 6: 1日のしめ（着手モジュールを使ったことがあるとき）
