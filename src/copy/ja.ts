@@ -181,6 +181,16 @@ export const ja = {
     quickSituation: 'どんな局面だった?', quickChosen: 'どうした?', retro: 'あとから記録している（読むべきだった）',
     joseki: ['戻せない手は保留する', '選択肢が増える手を優先する', '迷ったら評価関数に近い手を選ぶ'],
     triggerExamples: ['5,000円以上の支出', '半日以上の予定', '誘いへの返事'],
+    title: '盤面', add: '追加', deadlines: '期限', projects: '進行中の案件', resources: '資源',
+    empty: '盤面はまだ空です', emptyAction: '盤面に追加', evalNone: '評価関数はまだありません',
+    period: '{start}〜{end}（あと{n}日）', periodRange: '{start}〜{end}', dueChip: '{title} {due}', edit: '編集', delete: '削除', deleted: '削除しました', menu: '{title}のメニュー',
+    types: { deadline: '締切', event: '予定', project: '案件', resource: '資源' },
+    item: { title: '盤面に追加', editTitle: '盤面の項目', type: '種類', text: '内容', due: '期限', dueNone: '期限なし', save: '保存', notFound: 'この項目は見つかりません' },
+    evalForm: {
+      title: '評価関数', metric: '指標', avoidItem: '避けたいこと {n}', start: '開始', end: '終了', save: '保存',
+      current: 'いまの評価関数', list: 'これまでと、これからの評価関数', newOne: '新しく決める', editing: '編集中',
+    },
+    triggers: { title: '手番トリガー', condition: '条件', add: '追加', examples: '例', active: '有効', empty: 'トリガーはまだありません' },
   },
   goals: {
     metricQ: '何で測る?', newMetric: '新しい指標', collection: '取得方法', verifiable: '外から確かめられる指標',

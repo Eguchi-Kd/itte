@@ -18,9 +18,11 @@ interface NotifyOptions {
 
 interface FeedbackApi {
   notify: (e: FeedbackEvent, opts?: NotifyOptions) => void;
+  /** 記録ではない操作（削除など）の取り消し付き通知。音と振動は出さない */
+  toast: (text: string, undo?: () => void) => void;
 }
 
-const Ctx = createContext<FeedbackApi>({ notify: () => undefined });
+const Ctx = createContext<FeedbackApi>({ notify: () => undefined, toast: () => undefined });
 
 type Shown =
   | { kind: 'sheet'; id: number; text: string; onDone?: () => void }
@@ -64,7 +66,13 @@ export function FeedbackProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(t);
   }, [shown, close]);
 
-  const api = useMemo(() => ({ notify }), [notify]);
+  const toast = useCallback((text: string, undo?: () => void) => {
+    seq.current += 1;
+    setLive(text);
+    setShown({ kind: 'snack', id: seq.current, text, undo });
+  }, []);
+
+  const api = useMemo(() => ({ notify, toast }), [notify, toast]);
 
   return (
     <Ctx.Provider value={api}>

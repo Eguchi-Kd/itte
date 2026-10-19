@@ -4,6 +4,11 @@ import { AppLayout } from './ui/screens/AppLayout';
 
 // 画面はルートごとに遅延読み込みする（§6.1.2）。T13 以降のモジュールはまだ空の画面
 const Placeholder = lazy(() => import('./ui/screens/Placeholder'));
+const TriggerSettings = lazy(() => import('./ui/screens/board/TriggerSettings'));
+const EvaluationSettings = lazy(() => import('./ui/screens/board/EvaluationSettings'));
+const BoardItemEdit = lazy(() => import('./ui/screens/board/BoardItemEdit'));
+const BoardItemNew = lazy(() => import('./ui/screens/board/BoardItemEdit'));
+const Board = lazy(() => import('./ui/screens/board/Board'));
 const Daily = lazy(() => import('./ui/screens/start/Daily'));
 const EscapeNew = lazy(() => import('./ui/screens/start/EscapeNew'));
 const SessionEnd = lazy(() => import('./ui/screens/start/SessionEnd'));
@@ -20,14 +25,9 @@ const HabitList = lazy(() => import('./ui/screens/habits/HabitList'));
 const Library = lazy(() => import('./ui/screens/library/Library'));
 
 const placeholderPaths = [
-  '/board',
-  '/board/items/new',
-  '/board/items/:id',
   '/moves/new',
   '/moves/quick',
   '/moves/:id',
-  '/settings/evaluation',
-  '/settings/triggers',
   '/goals/new',
   '/goals/:id',
   '/goals/:id/kizami',
@@ -54,6 +54,11 @@ export const routes: RouteObject[] = [
   {
     element: <AppLayout />,
     children: [
+      { path: '/settings/triggers', element: <TriggerSettings /> },
+      { path: '/settings/evaluation', element: <EvaluationSettings /> },
+      { path: '/board/items/:id', element: <BoardItemEdit /> },
+      { path: '/board/items/new', element: <BoardItemNew /> },
+      { path: '/board', element: <Board /> },
       { path: '/daily', element: <Daily /> },
       { path: '/escape/new', element: <EscapeNew /> },
       { path: '/session/:id/end', element: <SessionEnd /> },

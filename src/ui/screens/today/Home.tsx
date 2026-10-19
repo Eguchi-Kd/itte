@@ -26,6 +26,7 @@ import { CarryCard } from './CarryCard';
 import { ResumeCard } from './ResumeCard';
 import { TaskNodeView } from './TaskNodeView';
 import { DailyNodeView } from './DailyNodeView';
+import { BoardStrip } from './BoardStrip';
 import { AmountSheet } from './AmountSheet';
 import { HabitNodeView } from './HabitNodeView';
 import { PastRecordsSheet } from './PastRecordsSheet';
@@ -80,6 +81,8 @@ export default function Home() {
           <SettingsIcon size={24} strokeWidth={2.25} aria-hidden="true" />
         </Link>
       </header>
+
+      <BoardStrip today={today} />
 
       {path.interrupts.map((card) =>
         card.id === 'resume' ? (
