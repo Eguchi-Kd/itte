@@ -1,7 +1,7 @@
 # 進捗
 
 STATUS: IN_PROGRESS
-現在のタスク: T13
+現在のタスク: T14
 対象範囲: T01〜T32（M0〜M8。docs/SPEC.md §13）。T01〜T12 は最初のプロトタイプとして完了済み
 
 <!--
@@ -28,7 +28,7 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 - [x] T10 きょうの道（習慣）、ホーム、理由カード、取り消し、過去の記録、＋シート | commit: abfbc21 | AC: CORE-05（習慣部分）, HAB-07, UX-01, 03
 - [x] T11 習慣の詳細・一覧・編集、グラフ、カレンダー、.ics | commit: bef8ecd | AC: HAB-15, 16
 - [x] T12 アイコン、マニフェスト、デプロイ用ワークフロー | commit: 895f393 | AC: ビルド成果物の確認
-- [ ] T13 domain/start/tasks.ts、session.ts とテスト | commit: | AC: ―
+- [x] T13 domain/start/tasks.ts、session.ts とテスト | commit: | AC: ―
 - [ ] T14 repo/start.ts とテスト | commit: | AC: START-01, 05〜11
 - [ ] T15 ラフ登録、やることノード、持ち越しカード、やることの詳細 | commit: | AC: START-02, UX-02
 - [ ] T16 タイマー（復元、Wake Lock、タイトル）、詰まりシート | commit: | AC: START-03, 06, 07（13 は手動）
@@ -79,6 +79,7 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 
 新しいものを上に、1行ずつ書く。
 
+- 2026-10-19 T13 domain/start（todayTask・carryOverCandidates・startedOn・ラフ登録の検証、セッションの残り時間・状態・transition・findAbandoned）とテスト
 - 2026-10-19 GitHub に public の Eguchi-Kd/itte を作り、Pages の Source を GitHub Actions にして公開（ワークフロー成功、サイト表示を確認）。Android の Chrome で単体起動を確認（人）。ワークフローのアクションを Node.js 24 の版に上げ、対象範囲を T32 まで広げた
 - 2026-10-19 完了の定義を確認。サブエージェントの点検で弱いと指摘された AC-CORE-03, 05, HAB-10, 15, UX-06 のテストを強めた。lint・typecheck・test（174件）・build・e2e（12件）が通る。STATUS: DONE
 - 2026-10-19 T12 アイコン（Node 標準の zlib で PNG を書き出すスクリプト）、マニフェスト、GitHub Pages のワークフロー、ビルド成果物の E2E。VITE_BASE=/itte/ のビルドとプレビューで表示を確認

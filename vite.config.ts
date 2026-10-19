@@ -61,5 +61,7 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['tests/setup.ts'],
     include: ['src/**/*.test.{ts,tsx}', 'tests/unit/**/*.test.{ts,tsx}'],
+    // 画面のテストは遅延読み込みと IndexedDB を含み、並列実行で重くなるため
+    testTimeout: 20_000,
   },
 });
