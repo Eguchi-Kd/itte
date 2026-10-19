@@ -14,6 +14,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { TextField } from '../../components/TextField';
 import { useFeedback } from '../../feedback/FeedbackProvider';
 import { useFlags } from '../../hooks/useFlags';
+import { AffectInputs } from './StartTaskProvider';
 import { useNow } from '../../hooks/useNow';
 
 export default function SessionEnd() {
@@ -39,6 +40,12 @@ function EndLesson({ session }: { session: Session }) {
   const [stopping, setStopping] = useState(false);
   const [nextStep, setNextStep] = useState('');
   const [busy, setBusy] = useState(false);
+  const [actualIntensity, setActualIntensity] = useState<number | null>(null);
+  const [actualDuration, setActualDuration] = useState<number | null>(null);
+  // 感情予想を記録していた場合だけ、実際の値を聞く（任意）
+  const asksAffect = session.affectPredictionId !== null;
+  const affectActual =
+    asksAffect && actualIntensity !== null && actualDuration !== null ? { intensity: actualIntensity, durationMin: actualDuration } : null;
   // 次の一手は B 条件で始めたセッションでだけ聞く（A 条件では入力欄を出さない）
   const asksNext = session.roughMode;
   const valid = !asksNext || nextStep.trim().length > 0;
@@ -49,7 +56,7 @@ function EndLesson({ session }: { session: Session }) {
       const nextId =
         sessionState(session, Date.now()) === 'closed'
           ? (await startSession(session.taskId, roughStart, null, Date.now())).id
-          : await endSession(session.id, 'continue', null, null, Date.now());
+          : await endSession(session.id, 'continue', null, affectActual, Date.now());
       if (nextId) navigate(`/session/${nextId}`, { replace: true });
     } finally {
       setBusy(false);
@@ -59,7 +66,7 @@ function EndLesson({ session }: { session: Session }) {
   const stop = async () => {
     setBusy(true);
     try {
-      await endSession(session.id, 'stop', asksNext ? nextStep : null, null, Date.now());
+      await endSession(session.id, 'stop', asksNext ? nextStep : null, affectActual, Date.now());
       notify({ type: 'saved' });
       navigate('/', { replace: true });
     } finally {
@@ -78,6 +85,18 @@ function EndLesson({ session }: { session: Session }) {
       primaryDisabled={!valid || busy}
       onPrimary={() => void stop()}
     >
+      {asksAffect && (
+        <div data-testid="affect-actual">
+          <AffectInputs
+            intensity={actualIntensity}
+            duration={actualDuration}
+            onIntensity={setActualIntensity}
+            onDuration={setActualDuration}
+            intensityLabel={ja.start.affectActualQ}
+            durationLabel={ja.start.affectActualDurQ}
+          />
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-3">
         <Button size="lg" variant="secondary" disabled={busy} onClick={() => void keepGoing()}>
           {ja.start.continue}

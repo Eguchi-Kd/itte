@@ -10,6 +10,7 @@ import {
   spentMinutes,
   transition,
 } from '../start/session';
+import { shouldAskAffect } from '../start/affect';
 import { carryOverCandidates, startedOn, todayTask, validateTaskInput } from '../start/tasks';
 import type { Session } from '../types';
 import { NOW, session, task } from './startFixtures';
@@ -169,5 +170,35 @@ describe('放置と進行中', () => {
   it('activeSession は開始から10分未満の未終了セッション', () => {
     expect(activeSession([session({ startedAt: NOW - 5 * MIN })], NOW)?.id).toBe('s1');
     expect(activeSession([session({ startedAt: NOW - SESSION_MS })], NOW)).toBeNull();
+  });
+});
+
+describe('感情予想のシート', () => {
+  const base = {
+    task: { goalId: 'g1' },
+    goal: { id: 'g1', status: 'OPEN' as const, deadline: '2026-10-25' },
+    judged: false,
+    predictions: [] as { goalId: string; kind: 'AFFECT' | 'OUTCOME'; predictedAt: number }[],
+    shownToday: false,
+    roughStart: true,
+    today: '2026-10-18',
+  };
+
+  it('AC-START-12: 段に紐づいたやることで、その段の感情予想が今日まだなければ出す。同じ日の2回目は出さない', () => {
+    expect(shouldAskAffect(base)).toBe(true);
+    expect(shouldAskAffect({ ...base, shownToday: true })).toBe(false);
+    expect(shouldAskAffect({ ...base, predictions: [{ goalId: 'g1', kind: 'AFFECT', predictedAt: NOW }] })).toBe(false);
+    // 前日の予想や OUTCOME の予想は数えない
+    expect(shouldAskAffect({ ...base, predictions: [{ goalId: 'g1', kind: 'AFFECT', predictedAt: NOW - 86400000 }] })).toBe(true);
+    expect(shouldAskAffect({ ...base, predictions: [{ goalId: 'g1', kind: 'OUTCOME', predictedAt: NOW }] })).toBe(true);
+  });
+
+  it('AC-START-12: 段に紐づいていない、A 条件、判定済み・期限切れ・OPEN でない段では出さない', () => {
+    expect(shouldAskAffect({ ...base, task: { goalId: null } })).toBe(false);
+    expect(shouldAskAffect({ ...base, roughStart: false })).toBe(false);
+    expect(shouldAskAffect({ ...base, judged: true })).toBe(false);
+    expect(shouldAskAffect({ ...base, goal: { ...base.goal, deadline: '2026-10-17' } })).toBe(false);
+    expect(shouldAskAffect({ ...base, goal: { ...base.goal, status: 'MET' } })).toBe(false);
+    expect(shouldAskAffect({ ...base, goal: { ...base.goal, deadline: '2026-10-18' } })).toBe(true);
   });
 });

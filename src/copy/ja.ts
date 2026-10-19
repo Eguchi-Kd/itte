@@ -139,6 +139,7 @@ export const ja = {
     affectQ: 'どれくらいしんどそう?', affectLow: '平気', affectHigh: 'とてもしんどい',
     affectDurQ: 'そのしんどさは何分くらい続きそう?', affectRecordStart: '記録して始める', affectSkipStart: 'とばして始める',
     affectActualQ: '実際のしんどさは?', affectActualDurQ: '何分くらい続いた?',
+    affectMinutes: '{n}分', affectMore: 'それ以上',
     escapeIntro: '10分タイマーが途中で止まっていました',
     priorQ: '直前の状態は?', anxiety: '不安', fatigue: '疲れ', ambiguity: 'あいまい', boredom: '退屈',
     targetQ: 'どこへ?', video: '動画・SNS', game: 'ゲーム', sleep: '寝る', other: 'その他',

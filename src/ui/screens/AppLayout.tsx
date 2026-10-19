@@ -10,6 +10,7 @@ import { SettingsContext, useSettingsQuery } from '../hooks/useSettings';
 import { useUpdateState } from '../hooks/updateContext';
 import { useLaunch } from '../hooks/launchContext';
 import { EscapeForm } from './start/EscapeForm';
+import { StartTaskProvider } from './start/StartTaskProvider';
 import { allowsInterruptions, showsBottomNav } from '../routePolicy';
 
 export function AppLayout() {
@@ -29,11 +30,13 @@ export function AppLayout() {
   return (
     <SettingsContext.Provider value={settings}>
       <FeedbackProvider>
-        <div className={`app-column ${nav ? 'pb-24' : ''}`}>
-          <Suspense fallback={null}>
-            <Outlet />
-          </Suspense>
-        </div>
+        <StartTaskProvider>
+          <div className={`app-column ${nav ? 'pb-24' : ''}`}>
+            <Suspense fallback={null}>
+              <Outlet />
+            </Suspense>
+          </div>
+        </StartTaskProvider>
         {nav && <BottomNav onAdd={() => setQuickOpen(true)} />}
         <QuickActionSheet
           open={quickOpen}

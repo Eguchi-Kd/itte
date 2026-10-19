@@ -1,4 +1,4 @@
-import type { BoardItem, Goal, Session, StuckLog, Task } from '../../domain/types';
+import type { BoardItem, Goal, Prediction, Session, StuckLog, Task } from '../../domain/types';
 import { db } from '../db';
 
 export interface TaskDetailData {
@@ -46,4 +46,27 @@ export async function queryOpenGoals(): Promise<Goal[]> {
 
 export function queryBoardItem(id: string): Promise<BoardItem | undefined> {
   return db.boardItems.get(id);
+}
+
+export interface AffectContext {
+  task: Task | null;
+  goal: Goal | null;
+  judged: boolean;
+  predictions: Prediction[];
+}
+
+/** 感情予想のシートを出すかの判定に使うデータ */
+export async function queryAffectContext(taskId: string): Promise<AffectContext> {
+  const task = (await db.tasks.get(taskId)) ?? null;
+  if (!task?.goalId) return { task, goal: null, judged: false, predictions: [] };
+  const [goal, judgments, predictions] = await Promise.all([
+    db.goals.get(task.goalId),
+    db.judgments.where('goalId').equals(task.goalId).count(),
+    db.predictions.where('goalId').equals(task.goalId).toArray(),
+  ]);
+  return { task, goal: goal ?? null, judged: judgments > 0, predictions };
+}
+
+export function queryPrediction(id: string): Promise<Prediction | undefined> {
+  return db.predictions.get(id);
 }
