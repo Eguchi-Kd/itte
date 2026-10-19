@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ja } from '../../copy/ja';
 import { habitDraft, testDb as db } from '../../db/__tests__/helpers';
 import { exportJson } from '../../db/repo/common';
+import { createGoal, saveMetric } from '../../db/repo/goals';
 import { recordDone, saveHabit } from '../../db/repo/habits';
 import { NOW, renderAt, resetDb } from './testUtils';
 
@@ -62,9 +63,16 @@ describe('全データ削除', () => {
 
 describe('整合性', () => {
   it('AC-DATA-08: 設定画面の整合性の確認が「問題ありません（{n}件）」を表示する', async () => {
+    // 段を1つ立てると、事前コミット2件と予想1件が台帳に積まれる
+    const m = await saveMetric({ name: '章数', unit: '章', direction: 'HIGHER_IS_BETTER', collectionMethod: '数える', verifiable: true }, NOW);
+    await createGoal(
+      { metricId: m.id, title: '章を3つ', targetValue: 3, comparator: 'GTE', deadline: '2026-10-25', onMet: 'a', onUnmet: 'b', probability: 50, predictedValue: 3 },
+      NOW,
+    );
+    expect(await db.ledger.count()).toBe(3);
     renderAt('/settings/data');
     fireEvent.click(await screen.findByRole('button', { name: ja.settings.integrityCheck }));
-    expect(await screen.findByTestId('integrity-result')).toHaveTextContent('問題ありません（0件）');
+    expect(await screen.findByTestId('integrity-result')).toHaveTextContent('問題ありません（3件）');
   });
 });
 

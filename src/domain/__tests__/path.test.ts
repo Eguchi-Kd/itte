@@ -269,6 +269,14 @@ describe('buildTodayPath（判定）', () => {
     expect(p.nodes.map((n) => n.id)).toEqual(['judge:early', 'judge:late', 'decide:m1', 'habit:timed', 'habit:cue', 'task:t1', 'daily']);
     expect(p.nextNodeId).toBe('judge:early');
     expect(p.nodes[0]).toMatchObject({ kind: 'judge', state: 'next', title: '段early', deadline: '2026-10-10' });
+
+    // 7種類すべて（週次ふりかえりを含む）を1回で並べる
+    const all = buildTodayPath(
+      input({ goals, judgmentRequests: reqs, moves: [move], habits: habitsMixed, tasks: [task()], startUsed: true, weeklyRuns: [] }),
+      NOW,
+    );
+    expect(all.nodes.map((n) => n.id)).toEqual(['judge:early', 'judge:late', 'decide:m1', 'habit:timed', 'habit:cue', 'task:t1', 'weekly', 'daily']);
+    expect(all.nextNodeId).toBe('judge:early');
   });
 
   it('AC-CORE-05: 実験の A 条件（judgmentEnforced=false）では判定ノードが消える', () => {

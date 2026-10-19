@@ -74,9 +74,18 @@ test.describe('当たり判定', () => {
     await page.getByRole('radio', { name: '始めたい' }).click();
     await page.getByRole('button', { name: 'つぎへ' }).click();
     expect(await smallTargets(page)).toEqual([]);
-    // 同じルートなのでハッシュだけでは入力が残る。読み込み直して最初のステップから作る
-    await page.reload();
-    await createHabit(page, '英単語');
+    await page.getByLabel('行動名', { exact: true }).fill('英単語');
+    await page.getByRole('radio', { name: '分', exact: true }).click();
+    await page.getByLabel('1回の量', { exact: true }).fill('10');
+    await page.getByLabel('絶対にできる量', { exact: true }).fill('5');
+    await page.getByRole('button', { name: 'つぎへ' }).click();
+    expect(await smallTargets(page)).toEqual([]);
+    await page.getByLabel('時刻', { exact: true }).fill('07:00');
+    await page.getByLabel('場所', { exact: true }).fill('机');
+    await page.getByRole('button', { name: 'つぎへ' }).click();
+    expect(await smallTargets(page)).toEqual([]);
+    await page.getByRole('button', { name: 'この内容で始める' }).click();
+    await expect(page).toHaveURL(/#\/$/);
 
     // ホーム（習慣のノード、記録済みの表示）
     await expect(page.getByTestId('home')).toBeVisible();
@@ -158,35 +167,50 @@ test.describe('当たり判定', () => {
   });
 });
 
+/** 実行中のアニメーションのうち、transform（translate）を動かすものの名前 */
+function transformAnimations(page: Page) {
+  return page.evaluate(() =>
+    document
+      .getAnimations()
+      .filter((a) => {
+        const effect = a.effect as KeyframeEffect | null;
+        return effect?.getKeyframes().some((k) => 'transform' in k || 'translate' in k) ?? false;
+      })
+      .map((a) => (a as CSSAnimation).animationName ?? 'transition'),
+  );
+}
+
+test.describe('動きの抑制（対照）', () => {
+  test.use({ reducedMotion: 'no-preference' });
+
+  test('AC-UX-10: 抑制しない設定では、ボトムシートが transform のアニメーション（sheet-in）で出る（測り方の確認）', async ({ page }) => {
+    await page.clock.setFixedTime(new Date('2026-10-19T09:00:00+09:00'));
+    await onboardToHabit(page);
+    await createHabit(page, '英単語');
+    await page.getByTestId('bottom-nav').getByRole('button', { name: '追加' }).click();
+    expect(await transformAnimations(page)).toContain('sheet-in');
+  });
+});
+
 test.describe('動きの抑制', () => {
   test.use({ reducedMotion: 'reduce' });
 
   test('AC-UX-10: reducedMotion=reduce で、ボトムシートと画面遷移に transform のアニメーションがない', async ({ page }) => {
     await page.clock.setFixedTime(new Date('2026-10-19T09:00:00+09:00'));
-    const transformAnimations = () =>
-      page.evaluate(() =>
-        document
-          .getAnimations()
-          .filter((a) => {
-            const effect = a.effect as KeyframeEffect | null;
-            return effect?.getKeyframes().some((k) => 'transform' in k || 'translate' in k) ?? false;
-          })
-          .map((a) => (a as CSSAnimation).animationName ?? 'transition'),
-      );
     await onboardToHabit(page);
-    expect(await transformAnimations()).toEqual([]);
+    expect(await transformAnimations(page)).toEqual([]);
     await createHabit(page, '英単語');
-    expect(await transformAnimations()).toEqual([]);
+    expect(await transformAnimations(page)).toEqual([]);
     // ボトムシート（＋）
     await page.getByTestId('bottom-nav').getByRole('button', { name: '追加' }).click();
     await expect(page.getByTestId('quick-sheet')).toBeVisible();
-    expect(await transformAnimations()).toEqual([]);
+    expect(await transformAnimations(page)).toEqual([]);
     // 画面遷移
     await page.getByTestId('quick-turn').click();
     await expect(page).toHaveURL(/#\/moves\/new$/);
-    expect(await transformAnimations()).toEqual([]);
+    expect(await transformAnimations(page)).toEqual([]);
     await page.goto('./#/board');
-    expect(await transformAnimations()).toEqual([]);
+    expect(await transformAnimations(page)).toEqual([]);
   });
 });
 
@@ -195,6 +219,8 @@ test.describe('オフライン', () => {
 
   test('AC-UX-11: Service Worker の登録後にオフラインにしても、すべてのタブ画面とレッスンが表示・操作できる', async ({ page, context }) => {
     test.setTimeout(90_000);
+    // 金曜にして、週次ふりかえりのレッスンも開けるようにする
+    await page.clock.setFixedTime(new Date('2026-10-23T12:00:00+09:00'));
     await page.goto('./');
     await page.evaluate(async () => {
       await navigator.serviceWorker.ready;
@@ -234,7 +260,43 @@ test.describe('オフライン', () => {
     await page.getByLabel('最初の動作', { exact: true }).fill('エディタを開く');
     await page.getByRole('button', { name: '保存', exact: true }).click();
     await expect(page).toHaveURL(/#\/$/);
-    await expect(page.getByRole('button', { name: '卒論の序章を始める' })).toBeVisible();
+    await expect(page.getByTestId('feedback-sheet')).toHaveCount(0);
+
+    // タイマー → 中断 → セッション終了のレッスン → やめると次の一手
+    await page.getByRole('button', { name: '卒論の序章を始める' }).click();
+    await expect(page.getByTestId('session-timer')).toBeVisible();
+    await page.getByRole('button', { name: '中断' }).click();
+    await expect(page).toHaveURL(/#\/session\/[0-9a-f-]+\/end$/);
+    await page.getByRole('button', { name: 'やめる' }).click();
+    await page.getByLabel('次の一手', { exact: true }).fill('2章の見出しを書く');
+    await page.getByRole('button', { name: '確定する' }).click();
+    await expect(page).toHaveURL(/#\/$/);
+    await expect(page.getByTestId('feedback-sheet')).toHaveCount(0);
+
+    // 読みシートを最後まで
+    await page.goto('./#/moves/new');
+    await page.getByLabel('どんな局面?', { exact: true }).fill('飲み会の誘いへの返事');
+    await page.getByRole('button', { name: 'つぎへ' }).click();
+    await page.getByLabel('候補 1', { exact: true }).fill('行く');
+    await page.getByLabel('候補 2', { exact: true }).fill('断る');
+    await page.getByRole('button', { name: 'つぎへ' }).click();
+    await page.getByRole('button', { name: 'つぎへ' }).click();
+    await page.getByRole('radio', { name: '断る' }).click();
+    await page.getByRole('button', { name: 'これにする' }).click();
+    await expect(page.getByTestId('home')).toBeVisible();
+    await expect(page.getByTestId('feedback-sheet')).toHaveCount(0);
+
+    // 週次ふりかえりのレッスンを進める（1枚目 → 感想戦のカード）
+    await page.getByTestId('weekly-node').getByRole('button', { name: '始める' }).click();
+    await expect(page).toHaveURL(/#\/review\/weekly\/2026-10-19$/);
+    await page.getByTestId('lesson-shell').getByRole('button', { name: 'つぎへ' }).click();
+    await expect(page.getByTestId('review-move')).toContainText('断る（選んだ手）');
+
+    // 判定・刻む・切り直すのレッスンも、画面のコードをオフラインで読み込める（段がないので「見つかりません」を出す）
+    for (const hash of ['#/judge/none', '#/goals/none/kizami', '#/goals/none/recut']) {
+      await page.goto(`./${hash}`);
+      await expect(page.getByText('この段は見つかりません')).toBeVisible();
+    }
   });
 });
 

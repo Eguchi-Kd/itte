@@ -14,6 +14,7 @@ import { FlagsContext, useFlagsQuery } from '../hooks/useFlags';
 import { EscapeForm } from './start/EscapeForm';
 import { StartTaskProvider } from './start/StartTaskProvider';
 import { allowsInterruptions, showsBottomNav } from '../routePolicy';
+import { KomaHiddenContext } from '../mascot/komaContext';
 
 export function AppLayout() {
   const { pathname } = useLocation();
@@ -35,16 +36,19 @@ export function AppLayout() {
   if (!settings.onboarded && pathname !== '/onboarding') return <Navigate to="/onboarding" replace />;
 
   const nav = showsBottomNav(pathname);
+  const escapeOpen = escapeSessionId !== null && allowsInterruptions(pathname);
   return (
     <SettingsContext.Provider value={settings}>
       <FlagsContext.Provider value={flags}>
         <FeedbackProvider>
           <StartTaskProvider>
-            <div className={`app-column ${nav ? 'pb-24' : ''}`}>
-              <Suspense fallback={null}>
-                <Outlet />
-              </Suspense>
-            </div>
+            <KomaHiddenContext.Provider value={escapeOpen}>
+              <div className={`app-column ${nav ? 'pb-24' : ''}`}>
+                <Suspense fallback={null}>
+                  <Outlet />
+                </Suspense>
+              </div>
+            </KomaHiddenContext.Provider>
           </StartTaskProvider>
           {nav && <BottomNav onAdd={() => setQuickOpen(true)} />}
           <QuickActionSheet
@@ -58,7 +62,7 @@ export function AppLayout() {
           />
           {/* 起動時に放置セッションを閉じたら、逃避ログを1回だけ促す（§6.3.4-2）。レッスン中などは割り込まない */}
           <BottomSheet
-            open={escapeSessionId !== null && allowsInterruptions(pathname)}
+            open={escapeOpen}
             onClose={clearEscape}
             title={ja.start.escapeIntro}
             testId="escape-sheet"

@@ -1,11 +1,12 @@
-import { expect, test, type Page } from '@playwright/test';
+/// <reference lib="dom" />
+import { expect, test, type BrowserContext, type Page } from '@playwright/test';
 import { createHabit, onboardToHabit } from './helpers';
 
-/** アプリの origin 以外へのリクエストを集める */
-function watchExternal(page: Page, baseURL: string): string[] {
+/** アプリの origin 以外へのリクエストを集める（Service Worker が出すリクエストも含む） */
+function watchExternal(context: BrowserContext, baseURL: string): string[] {
   const origin = new URL(baseURL).origin;
   const external: string[] = [];
-  page.on('request', (req) => {
+  context.on('request', (req) => {
     const url = req.url();
     if (url.startsWith('data:') || url.startsWith('blob:')) return;
     if (new URL(url).origin !== origin) external.push(url);
@@ -18,10 +19,13 @@ async function openQuick(page: Page) {
   await expect(page.getByTestId('quick-sheet')).toBeVisible();
 }
 
+// 本番と同じく Service Worker を動かす
+test.use({ serviceWorkers: 'allow' });
+
 // §13 T32 の全体シナリオ。悪手を記録する手を、その週のふりかえりに入れるため月曜に始める
-test('AC-UX-07: 全体シナリオ（オンボーディング → 習慣 → 10分だけ → 手番 → 段 → 判定 → 刻む → 週次ふりかえり → 数字）の間、外部へのリクエストが0件', async ({ page, baseURL }) => {
+test('AC-UX-07: 全体シナリオ（オンボーディング → 習慣 → 10分だけ → 手番 → 段 → 判定 → 刻む → 週次ふりかえり → 数字）の間、外部へのリクエストが0件', async ({ page, context, baseURL }) => {
   test.setTimeout(120_000);
-  const external = watchExternal(page, baseURL ?? 'http://localhost:4319/itte/');
+  const external = watchExternal(context, baseURL ?? 'http://localhost:4319/itte/');
   await page.clock.install({ time: new Date('2026-10-19T09:00:00+09:00') });
 
   // オンボーディング（診断スキップ）→ 習慣を作る → ホームで「やった」
@@ -106,6 +110,23 @@ test('AC-UX-07: 全体シナリオ（オンボーディング → 習慣 → 10�
   await page.getByRole('button', { name: '確定する' }).click();
   await page.getByRole('button', { name: '刻む' }).click();
   await expect(page).toHaveURL(/#\/goals\/[0-9a-f-]+\/kizami$/);
+  // 刻むレッスンで子の段を立てる（指標と比較は元の段から引き継ぐ）
+  await expect(page.getByTestId('lesson-band')).toContainText('30語');
+  await page.getByTestId('lesson-shell').getByRole('button', { name: 'つぎへ' }).click();
+  await page.getByLabel('段の名前', { exact: true }).fill('20語');
+  await page.getByLabel('閾値', { exact: true }).fill('20');
+  await page.getByRole('button', { name: 'つぎへ' }).click();
+  await page.getByRole('radio', { name: '1週間後' }).click();
+  await page.getByRole('button', { name: 'つぎへ' }).click();
+  await page.getByLabel('届いたら、次に何をする?', { exact: true }).fill('30語の段に戻る');
+  await page.getByLabel('届かなかったら、次に何をする?', { exact: true }).fill('1日3語に刻む');
+  await page.getByRole('button', { name: 'つぎへ' }).click();
+  await page.getByRole('radio', { name: '60%' }).click();
+  await page.getByLabel('予想する値', { exact: true }).fill('20');
+  await page.getByRole('button', { name: 'つぎへ' }).click();
+  await page.getByRole('button', { name: 'この段を立てる' }).click();
+  await expect(page).toHaveURL(/#\/goals\/[0-9a-f-]+$/);
+  await expect(page.getByRole('heading', { name: '20語' })).toBeVisible();
 
   // 時計を金曜に進める → 週次ふりかえりで、その手を悪手（読み違い）として記録
   await page.clock.setSystemTime(new Date('2026-10-23T20:00:00+09:00'));
@@ -126,5 +147,7 @@ test('AC-UX-07: 全体シナリオ（オンボーディング → 習慣 → 10�
   await expect(page.getByTestId('numbers-week')).toContainText('10/19');
   await expect(page.getByTestId('numbers')).toContainText(/読み違い\s*1件/);
 
+  // Service Worker が登録された状態で通したことを確かめる
+  await expect.poll(() => page.evaluate(async () => (await navigator.serviceWorker.getRegistration()) !== undefined)).toBe(true);
   expect(external).toEqual([]);
 });

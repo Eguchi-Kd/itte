@@ -52,6 +52,15 @@ describe('感情予想の開始前シート', () => {
     await waitFor(() => expect(second.router.state.location.pathname).toMatch(/^\/session\//));
     cleanup();
 
+    // 同じ段に紐づいた別のやることでも、同じ日は出さない（1日1回は段ごとに数える）
+    const t2 = await createTask(taskInput({ title: '二章', goalId }), true, NOW);
+    const third = renderAt(`/tasks/${t2.id}`);
+    fireEvent.click(await screen.findByRole('button', { name: ja.today.node.start }));
+    await waitFor(async () => expect(await db.sessions.count()).toBe(3));
+    expect(screen.queryByTestId('affect-sheet')).toBeNull();
+    await waitFor(() => expect(third.router.state.location.pathname).toMatch(/^\/session\//));
+    cleanup();
+
     // 翌日（論理日）はまた出る。「記録して始める」で AFFECT 予想がセッションつきで作られる
     vi.setSystemTime(NOW + DAY);
     renderAt(`/tasks/${t.id}`);

@@ -1,10 +1,12 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ja } from '../../copy/ja';
 import { Koma } from '../mascot/Koma';
 import { allowsInterruptions, routeKind, showsBottomNav } from '../routePolicy';
-import { renderAt, resetDb } from './testUtils';
+import { habitDraft } from '../../db/__tests__/helpers';
+import { saveHabit } from '../../db/repo/habits';
+import { NOW, renderAt, resetDb } from './testUtils';
 
 const NO_TAB_PATHS = {
   lesson: ['/onboarding', '/session/s1/end', '/daily', '/moves/new', '/goals/new', '/goals/g1/kizami', '/judge/g1', '/review/weekly/2026-10-12'],
@@ -14,6 +16,8 @@ const NO_TAB_PATHS = {
 
 beforeEach(async () => {
   await resetDb({ onboarded: true });
+  // 記録があり一度も書き出していないので、タブの画面ならバックアップの割り込みが出る条件
+  await saveHabit(habitDraft(), NOW);
 });
 
 describe('下部タブと割り込み', () => {
@@ -32,9 +36,13 @@ describe('下部タブと割り込み', () => {
     }
   }
 
-  it('AC-UX-09: タブ画面では下部タブと更新のスナックバーが出る（対照）', async () => {
+  it('AC-UX-09: タブ画面では下部タブと更新のスナックバーが出て、ホームにはバックアップの割り込みが出る（対照）', async () => {
     renderAt('/library', { needRefresh: true, update: () => undefined });
     expect(await screen.findByTestId('bottom-nav')).toBeInTheDocument();
+    expect(screen.getByText(ja.today.interrupt.update)).toBeInTheDocument();
+    cleanup();
+    renderAt('/', { needRefresh: true, update: () => undefined });
+    expect(await screen.findByTestId('backup-card')).toHaveTextContent(ja.today.interrupt.backup);
     expect(screen.getByText(ja.today.interrupt.update)).toBeInTheDocument();
   });
 

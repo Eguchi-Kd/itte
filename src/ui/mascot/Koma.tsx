@@ -1,7 +1,9 @@
 // 案内役「コマ」（§5.7）。将棋の駒の五角形に点の目が2つ。表情は1種類だけで、結果に反応しない
+import { useContext } from 'react';
 import { useLocation } from 'react-router';
 import { ja } from '../../copy/ja';
 import { allowsKoma } from '../routePolicy';
+import { KomaHiddenContext } from './komaContext';
 
 export type KomaPose = 'wave' | 'point' | 'read' | 'sit';
 
@@ -16,8 +18,9 @@ const TILT: Record<KomaPose, number> = { wave: -8, point: 6, read: 0, sit: 0 };
 
 export function Koma({ pose, size = 96, says }: Props) {
   const { pathname } = useLocation();
-  // 判定・タイマー・逃避ログ・詰まりシートには出さない（§5.7-2）
-  if (!allowsKoma(pathname)) return null;
+  const hidden = useContext(KomaHiddenContext);
+  // 判定・タイマー・逃避ログ・詰まりシートには出さない（§5.7-2）。タブの画面に重ねた逃避ログのシートの間も出さない
+  if (!allowsKoma(pathname) || hidden) return null;
   return (
     <figure className="flex flex-col items-center gap-2" data-testid="koma" data-pose={pose}>
       <svg

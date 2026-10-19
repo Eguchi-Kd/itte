@@ -57,6 +57,16 @@ describe('起動時の処理', () => {
     expect((await onLaunch(NOW + MIN)).abandoned).toEqual([]);
   });
 
+  it('AC-UX-12: ホーム（空の状態）に逃避ログのシートを重ねている間はコマを描画せず、閉じると描画する', async () => {
+    render(<LaunchHarness initial="s-x" path="/" />);
+    const sheet = await screen.findByTestId('escape-sheet');
+    expect(await screen.findByTestId('empty-state')).toBeInTheDocument();
+    expect(screen.queryByTestId('koma')).toBeNull();
+    fireEvent.click(within(sheet).getByRole('button', { name: ja.start.escape.record }));
+    await waitFor(() => expect(screen.queryByTestId('escape-sheet')).toBeNull());
+    expect(await screen.findByTestId('koma')).toBeInTheDocument();
+  });
+
   it('逃避ログのシートはレッスンの画面では出さず、タブの画面に戻ったときに出す', async () => {
     render(<LaunchHarness initial="s-x" path="/habits/new" />);
     await screen.findByTestId('lesson-shell');
