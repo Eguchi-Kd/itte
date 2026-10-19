@@ -7,7 +7,7 @@ export type FeedbackEvent =
   | { type: 'judgment'; outcome: JudgmentOutcome }
   | { type: 'moveDecided' }
   | { type: 'moveReview'; rating: Rating }
-  | { type: 'stuck' }
+  | { type: 'stuck'; stopped?: boolean }
   | { type: 'escape' }
   | { type: 'daily' }
   | { type: 'measurement' }
@@ -34,5 +34,7 @@ const COPY_KEY: Record<FeedbackEvent['type'], string> = {
 };
 
 export function feedbackFor(e: FeedbackEvent): FeedbackSpec {
-  return { sound: 'recorded', haptic: 'recorded', variant: 'neutral', copyKey: COPY_KEY[e.type] };
+  // 詰まりで「止める」を選んだときはタイマーが続かないので「記録しました」（§6.6.5）。結果の良し悪しではない
+  const copyKey = e.type === 'stuck' && e.stopped ? 'feedback.recorded' : COPY_KEY[e.type];
+  return { sound: 'recorded', haptic: 'recorded', variant: 'neutral', copyKey };
 }

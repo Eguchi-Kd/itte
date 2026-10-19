@@ -1,7 +1,7 @@
 # 進捗
 
 STATUS: IN_PROGRESS
-現在のタスク: T16
+現在のタスク: T17
 対象範囲: T01〜T32（M0〜M8。docs/SPEC.md §13）。T01〜T12 は最初のプロトタイプとして完了済み
 
 <!--
@@ -30,8 +30,8 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 - [x] T12 アイコン、マニフェスト、デプロイ用ワークフロー | commit: 895f393 | AC: ビルド成果物の確認
 - [x] T13 domain/start/tasks.ts、session.ts とテスト | commit: d02c5ba | AC: ―
 - [x] T14 repo/start.ts とテスト | commit: 7ea3d62 | AC: START-01, 05〜11
-- [x] T15 ラフ登録、やることノード、持ち越しカード、やることの詳細 | commit: | AC: START-02, UX-02
-- [ ] T16 タイマー（復元、Wake Lock、タイトル）、詰まりシート | commit: | AC: START-03, 06, 07（13 は手動）
+- [x] T15 ラフ登録、やることノード、持ち越しカード、やることの詳細 | commit: 9af4d4d | AC: START-02, UX-02
+- [x] T16 タイマー（復元、Wake Lock、タイトル）、詰まりシート | commit: | AC: START-03, 06, 07（13 は手動）
 - [ ] T17 セッション終了、次の一手 | commit: | AC: START-04, 05
 - [ ] T18 起動時の処理（§6.3.4 の 1, 2, 5）、放置セッション、逃避ログ、1日のしめ | commit: | AC: START-08, 09, 10
 - [ ] T19 盤面のドメインとリポジトリ（評価関数、項目、トリガー）とテスト | commit: | AC: BOARD-01, 02, 04, 06
@@ -79,6 +79,7 @@ STATUS は次のどれか。.claude/hooks/stop-gate.mjs がこの行を読む。
 
 新しいものを上に、1行ずつ書く。
 
+- 2026-10-19 T16 10分タイマー（startedAt から復元、Wake Lock、タブのタイトル、0:00 で終了画面へ）、詰まりシート（AC-START-03, 06, 07。13 は手動）
 - 2026-10-19 T15 ラフ登録（3ステップ、?start=1）、ホームのやることノード・他のやること・持ち越しカード・再開カード、やることの詳細と一覧（AC-START-02, AC-UX-02）
 - 2026-10-19 T14 repo/start.ts（ラフ登録・持ち越し・片づけ・セッションの開始と終了・詰まり・中断・放置・逃避ログ・1日のしめ）とテスト（AC-START-01, 05〜11）
 - 2026-10-19 T13 domain/start（todayTask・carryOverCandidates・startedOn・ラフ登録の検証、セッションの残り時間・状態・transition・findAbandoned）とテスト
