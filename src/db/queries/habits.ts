@@ -28,6 +28,8 @@ export interface HomeData {
   startUsed: boolean;
   /** 習慣・やること・段・手のどれかが1件以上ある（ホームの空の状態の判定） */
   hasRecords: boolean;
+  /** 最初の記録（習慣の記録・セッション・手・段のどれか）がある */
+  hasFirstRecord: boolean;
   /** 週次ふりかえりの実施記録 */
   weeklyRuns: WeeklyReviewRun[];
   /** 判定前の段と判定待ち */
@@ -58,6 +60,7 @@ export async function queryHomeData(today: LocalDate): Promise<HomeData> {
     db.judgmentRequests.toArray(),
     db.weeklyReviewRuns.toArray(),
   ]);
+  const logCount = await db.habitLogs.count();
   const candidates = await db.candidates.where('moveId').anyOf(moves.map((m) => m.id)).toArray();
   return {
     habits,
@@ -68,6 +71,7 @@ export async function queryHomeData(today: LocalDate): Promise<HomeData> {
     startUsed: taskCount > 0 || sessionCount > 0,
     dailyDone: daily !== undefined,
     hasRecords: habits.length > 0 || taskCount > 0 || moveCount > 0 || goalCount > 0,
+    hasFirstRecord: logCount > 0 || sessionCount > 0 || moveCount > 0 || goalCount > 0,
     goals,
     judgmentRequests,
     weeklyRuns,

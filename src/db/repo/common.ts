@@ -91,3 +91,12 @@ export { exportCsvZip, exportJson, importJson, validateImport, wipeAll, type Imp
 export async function startFresh(now: EpochMs): Promise<void> {
   await ensureSeed(now);
 }
+
+/** 「はじめての○○」カードを見たことを残す（§4.2、introSeen） */
+export async function markIntroSeen(id: string, now: EpochMs): Promise<void> {
+  await db.transaction('rw', db.settings, async () => {
+    const current = (await db.settings.get('singleton')) ?? defaultSettings(now);
+    if (current.introSeen.includes(id)) return;
+    await db.settings.put({ ...current, introSeen: [...current.introSeen, id] });
+  });
+}

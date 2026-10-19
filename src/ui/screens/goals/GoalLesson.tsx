@@ -125,6 +125,7 @@ export function GoalLesson({ mode, base }: { mode: GoalLessonMode; base: Goal | 
   return (
     <LessonShell
       step={step}
+      intro={step === 1 ? 'goal' : undefined}
       total={TOTAL}
       title={titles[step - 1]}
       band={band}

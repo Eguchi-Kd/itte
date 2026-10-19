@@ -57,6 +57,7 @@ export default function HabitWizard() {
   return (
     <LessonShell
       step={step}
+      intro={step === 1 ? 'habit' : undefined}
       total={TOTAL}
       title={title}
       onClose={() => navigate('/', { replace: true })}

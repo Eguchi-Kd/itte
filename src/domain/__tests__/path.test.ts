@@ -35,6 +35,7 @@ function input(p: Partial<PathInput> = {}): PathInput {
     startUsed: false,
     integrityFailed: false,
     backupDue: false,
+    installDue: false,
     dailyDone: false,
     dismissed: {},
     ...p,
@@ -327,5 +328,13 @@ describe('割り込みカード（整合性・バックアップ）', () => {
     const h = [habit({ id: 'p', startedOn: '2026-10-16' })];
     expect(build(input({ habits: h, integrityFailed: true, backupDue: true }), NOW).interrupts.map((c) => c.id)).toEqual(['reason', 'integrity']);
     expect(build(input({ backupDue: true, dismissed: { backup: TODAY } }), NOW).interrupts).toEqual([]);
+  });
+});
+
+describe('割り込みカード（ホーム画面に追加）', () => {
+  it('installDue のときだけ、バックアップの後の優先で出す', () => {
+    expect(build(input({ installDue: true }), NOW).interrupts.map((c) => c.id)).toEqual(['install']);
+    expect(build(input({ installDue: true, backupDue: true, integrityFailed: true }), NOW).interrupts.map((c) => c.id)).toEqual(['integrity', 'backup']);
+    expect(build(input({ installDue: false }), NOW).interrupts).toEqual([]);
   });
 });

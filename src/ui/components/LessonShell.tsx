@@ -4,6 +4,7 @@ import { ja } from '../../copy/ja';
 import { fill } from '../../copy/fill';
 import { BottomSheet } from './BottomSheet';
 import { Button, type ButtonVariant } from './Button';
+import { LessonIntro, type IntroId } from './LessonIntro';
 
 interface Props {
   step: number;
@@ -21,6 +22,8 @@ interface Props {
   footer?: ReactNode;
   /** ヘッダーの下に常に出す細い帯（読みシートの評価関数など） */
   band?: ReactNode;
+  /** 初回だけ出す「はじめての○○」カード（最初のステップで渡す） */
+  intro?: IntroId;
 }
 
 /** レッスン形式の画面枠（§5.8）。上部に閉じるとステップ、中央に問い、下部に固定の主ボタン */
@@ -38,6 +41,7 @@ export function LessonShell({
   onPrimary,
   footer,
   band,
+  intro,
 }: Props) {
   const [leaving, setLeaving] = useState(false);
   return (
@@ -67,6 +71,7 @@ export function LessonShell({
       </header>
       {band && <div className="mx-4 mt-3 rounded-2xl bg-surface-2 px-4 py-2 text-caption" data-testid="lesson-band">{band}</div>}
       <section className="flex flex-1 flex-col gap-6 px-4 pt-6 pb-4">
+        {intro && <LessonIntro id={intro} />}
         <h1 className="text-h1">{title}</h1>
         {children}
       </section>

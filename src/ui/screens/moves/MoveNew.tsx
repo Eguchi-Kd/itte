@@ -85,6 +85,7 @@ export default function MoveNew() {
   return (
     <LessonShell
       step={step}
+      intro={step === 1 ? 'move' : undefined}
       total={TOTAL}
       title={title}
       band={band}

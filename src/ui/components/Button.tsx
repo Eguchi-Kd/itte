@@ -29,7 +29,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`btn btn-${variant} ${HEIGHT[size]} ${size === 'sm' ? 'min-w-12 text-caption' : 'min-w-12'} ${
+      className={`btn btn-${variant} ${HEIGHT[size]} ${size === 'sm' ? 'btn-hit min-w-12 text-caption' : 'min-w-12'} ${
         block ? 'w-full' : ''
       } relative ${className}`}
       disabled={disabled || loading}

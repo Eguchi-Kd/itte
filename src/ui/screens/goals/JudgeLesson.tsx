@@ -136,6 +136,7 @@ function Judge({ goal, metric, initial, initialOutcome, onMet, onUnmet, latest }
   return (
     <LessonShell
       step={step}
+      intro={step === 1 ? 'judge' : undefined}
       total={TOTAL}
       title={title}
       onClose={() => navigate('/', { replace: true })}

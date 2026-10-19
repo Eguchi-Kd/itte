@@ -61,6 +61,8 @@ export interface PathInput {
   integrityFailed: boolean;
   /** バックアップを促す条件（割り込みカード5、backupDue） */
   backupDue: boolean;
+  /** ホーム画面に追加を促す条件（割り込みカード6）。最初の記録の後、未インストールで、まだ出していない */
+  installDue: boolean;
   /** 割り込みカード ID → 「あとで」を押した論理日 */
   dismissed: Record<string, LocalDate>;
 }
@@ -132,7 +134,8 @@ export type InterruptCard =
   | { id: 'reason'; prompts: ReasonPrompt[] }
   | { id: 'carry'; tasks: Task[] }
   | { id: 'integrity' }
-  | { id: 'backup' };
+  | { id: 'backup' }
+  | { id: 'install' };
 
 /** §6.3.3 の優先順 */
 export const INTERRUPT_PRIORITY: readonly InterruptCardId[] = ['resume', 'reason', 'carry', 'integrity', 'backup', 'install'];
@@ -191,6 +194,7 @@ export function buildTodayPath(input: PathInput, now: EpochMs): TodayPath {
   if (carry.length > 0 && !isDismissed(input.dismissed, 'carry', today)) candidates.push({ id: 'carry', tasks: carry });
   if (input.integrityFailed && !isDismissed(input.dismissed, 'integrity', today)) candidates.push({ id: 'integrity' });
   if (input.backupDue && !isDismissed(input.dismissed, 'backup', today)) candidates.push({ id: 'backup' });
+  if (input.installDue) candidates.push({ id: 'install' });
   const interrupts = candidates
     .sort((a, b) => INTERRUPT_PRIORITY.indexOf(a.id) - INTERRUPT_PRIORITY.indexOf(b.id))
     .slice(0, MAX_INTERRUPTS);

@@ -72,7 +72,8 @@ describe('週次ふりかえりのレッスン', () => {
     await screen.findByRole('radiogroup', { name: ja.review.autoQ[0] });
     answerHabit();
     fireEvent.click(screen.getByRole('button', { name: ja.review.habit.save }));
-    expect(await screen.findByTestId('weekly-close')).toHaveTextContent('悪手の割合 0%（1件中0件）');
+    // しめのカードは、保存した感想戦をライブクエリで読み直してから数を出す
+    await waitFor(() => expect(screen.getByTestId('weekly-close')).toHaveTextContent('悪手の割合 0%（1件中0件）'));
     expect((await db.weeklyReviewRuns.toArray())[0].completedAt).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: ja.review.close.finish }));
     await waitFor(async () => expect((await db.weeklyReviewRuns.toArray())[0].completedAt).toBe(NOW));

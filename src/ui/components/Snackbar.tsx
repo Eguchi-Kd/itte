@@ -12,7 +12,7 @@ interface Props {
 export function Snackbar({ text, onUndo, actionLabel, onAction }: Props) {
   return (
     <div
-      className="fade-enter fixed inset-x-0 bottom-24 z-50 mx-auto flex max-w-[448px] items-center gap-3 rounded-2xl bg-text px-4 py-1 text-bg"
+      className="fade-enter fixed inset-x-0 bottom-28 z-50 mx-auto flex max-w-[448px] items-center gap-3 rounded-2xl bg-text px-4 py-1 text-bg"
       data-testid="snackbar"
       data-variant="neutral"
     >

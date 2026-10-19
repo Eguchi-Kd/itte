@@ -1,7 +1,7 @@
 // 設定（#/settings、§6.12）。音・振動、理由タグ、タイプ診断のやり直し、足踏みの判定、カレンダーへのまとめ書き出し、バージョン
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useState } from 'react';
-import { Link } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { APP_NAME, APP_VERSION } from '../../../config';
 import { ja } from '../../../copy/ja';
 import { fill } from '../../../copy/fill';
@@ -15,6 +15,7 @@ import { exportAllIcs } from '../../../domain/ics';
 import type { ReasonTag } from '../../../domain/types';
 import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
+import { CheckSheet } from '../../components/CheckSheet';
 import { ChoiceChip, ChipGroup } from '../../components/ChoiceChip';
 import { ListRow } from '../../components/ListRow';
 import { NumberStepper } from '../../components/NumberStepper';
@@ -22,6 +23,7 @@ import { ScreenHeader } from '../../components/ScreenHeader';
 import { TextField } from '../../components/TextField';
 import { Toggle } from '../../components/Toggle';
 import { downloadText } from '../../download';
+import { useFeedback } from '../../feedback/FeedbackProvider';
 import { useSettings } from '../../hooks/useSettings';
 
 export default function Settings() {
@@ -29,6 +31,9 @@ export default function Settings() {
   const data = useLiveQuery(() => queryWeeklyData(), []);
   const goals = useLiveQuery(() => queryGoalsData(), []);
   const [newTag, setNewTag] = useState('');
+  const [demoOpen, setDemoOpen] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useFeedback();
   if (!settings || !data || !goals) return null;
   const save = (patch: Parameters<typeof updateSettings>[0]) => void updateSettings(patch, Date.now());
   const tags = [...data.tags].sort((a, b) => a.order - b.order);
@@ -125,6 +130,27 @@ export default function Settings() {
         <ListRow to="/onboarding" title={ja.settings.redoPersona} />
         <ListRow to="/settings/data" title={ja.settings.dataLink} />
       </div>
+      {import.meta.env.DEV && (
+        <>
+          <Button variant="secondary" onClick={() => setDemoOpen(true)}>
+            {ja.settings.demo}
+          </Button>
+          <CheckSheet
+            open={demoOpen}
+            title={ja.settings.importReplace}
+            confirmLabel={ja.settings.demo}
+            onFix={() => setDemoOpen(false)}
+            onConfirm={async () => {
+              // 開発用。本番のビルドには含めない（import.meta.env.DEV が false なら読み込まない）
+              const { loadDemoData } = await import('../../../db/seedDemo');
+              await loadDemoData(Date.now());
+              setDemoOpen(false);
+              toast(ja.settings.demoDone);
+              navigate('/', { replace: true });
+            }}
+          />
+        </>
+      )}
       <p className="text-caption text-text-2">
         {ja.settings.version}: {APP_VERSION}
       </p>

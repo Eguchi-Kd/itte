@@ -71,6 +71,7 @@ function TaskLesson({ initialTitle, boardItemId }: { initialTitle: string; board
   return (
     <LessonShell
       step={step}
+      intro={step === 1 ? 'task' : undefined}
       total={total}
       title={title}
       onClose={() => navigate('/', { replace: true })}

@@ -48,7 +48,7 @@ function YesNo({ label, value, onChange }: { label: string; value: boolean | nul
 export function FactsCard({ frame, input, weekStart }: { frame: CardFrame; input: WeeklyInput; weekStart: LocalDate }) {
   const f = weeklyFacts(input, weekStart);
   return (
-    <LessonShell step={frame.step} total={frame.total} title={ja.review.titles.facts} onClose={frame.onClose} primaryLabel={ja.common.next} onPrimary={frame.onNext}>
+    <LessonShell step={frame.step} intro={frame.step === 1 ? 'weekly' : undefined} total={frame.total} title={ja.review.titles.facts} onClose={frame.onClose} primaryLabel={ja.common.next} onPrimary={frame.onNext}>
       <Koma pose="read" />
       <ul className="flex flex-col gap-2 text-body" data-testid="weekly-facts">
         {f.habits.map((h) => (
@@ -95,6 +95,7 @@ export function MoveReviewCard({ frame, data, moveId }: { frame: CardFrame; data
   return (
     <LessonShell
       step={frame.step}
+      intro={frame.step === 1 ? 'weekly' : undefined}
       total={frame.total}
       title={move.situation}
       onClose={frame.onClose}
@@ -199,6 +200,7 @@ export function HabitCheckCard({
   return (
     <LessonShell
       step={frame.step}
+      intro={frame.step === 1 ? 'weekly' : undefined}
       total={frame.total}
       title={habit.name}
       onClose={frame.onClose}
@@ -273,6 +275,7 @@ export function PatternCard({ frame, data, habitId, patterns }: { frame: CardFra
   return (
     <LessonShell
       step={frame.step}
+      intro={frame.step === 1 ? 'weekly' : undefined}
       total={frame.total}
       title={habit.name}
       onClose={frame.onClose}
@@ -331,7 +334,7 @@ export function StallReviewCard({
   const flag = goalsData.stallFlags.find((f) => f.id === flagId);
   const goal = flag ? goalsData.goals.find((g) => g.id === flag.goalId) : undefined;
   return (
-    <LessonShell step={frame.step} total={frame.total} title={ja.review.titles.stalls} onClose={frame.onClose} primaryLabel={ja.common.next} onPrimary={frame.onNext}>
+    <LessonShell step={frame.step} intro={frame.step === 1 ? 'weekly' : undefined} total={frame.total} title={ja.review.titles.stalls} onClose={frame.onClose} primaryLabel={ja.common.next} onPrimary={frame.onNext}>
       {flag && goal && (
         <StallCard
           flag={flag}
@@ -378,6 +381,7 @@ export function CloseCard({
   return (
     <LessonShell
       step={frame.step}
+      intro={frame.step === 1 ? 'weekly' : undefined}
       total={frame.total}
       title={ja.review.titles.close}
       onClose={frame.onClose}

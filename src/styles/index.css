@@ -97,6 +97,12 @@
       transform var(--dur-press) ease-out,
       border-bottom-width var(--dur-press) ease-out;
   }
+  /* sm は見た目 40px。上下の余白（my-1）に当たり判定を 4px ずつ広げて 48px にする（X3） */
+  .btn-hit::before {
+    content: "";
+    position: absolute;
+    inset: -5px 0 -8px;
+  }
   .btn:active:not(:disabled) {
     transform: translateY(2px);
     border-bottom-width: 2px;
@@ -132,6 +138,13 @@
     background: var(--danger);
     border-bottom-color: color-mix(in srgb, var(--danger) 70%, black);
     color: #fff;
+  }
+  /* ダークの主ボタン・削除ボタンは面が明るいので、白い文字では 4.5:1 に届かない（§5.2）。文字を背景色にする */
+  @media (prefers-color-scheme: dark) {
+    .btn-primary,
+    .btn-danger {
+      color: var(--bg);
+    }
   }
 
   /* カード（§5.4）。影を使わず下辺で浮かせる */

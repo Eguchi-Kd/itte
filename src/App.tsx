@@ -4,6 +4,7 @@ import { checkIntegrity } from './db/backup';
 import { onLaunch } from './db/init';
 import type { ID } from './domain/types';
 import { routes } from './routes';
+import { InstallProvider } from './ui/hooks/InstallProvider';
 import { LaunchContext } from './ui/hooks/launchContext';
 import { PwaUpdateProvider } from './ui/hooks/PwaUpdateProvider';
 
@@ -38,7 +39,9 @@ export function App() {
   return (
     <PwaUpdateProvider>
       <LaunchContext.Provider value={launch}>
-        <RouterProvider router={router} />
+        <InstallProvider>
+          <RouterProvider router={router} />
+        </InstallProvider>
       </LaunchContext.Provider>
     </PwaUpdateProvider>
   );

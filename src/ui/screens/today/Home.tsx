@@ -12,6 +12,7 @@ import { formatDateShort } from '../../../domain/display';
 import { buildTodayPath, unscheduledHabits } from '../../../domain/path';
 import { backupDue } from '../../../domain/backup';
 import { useLaunch } from '../../hooks/launchContext';
+import { useInstall } from '../../hooks/installContext';
 import { InterruptCard } from '../../components/InterruptCard';
 import type { Habit, LocalDate } from '../../../domain/types';
 import { BottomSheet } from '../../components/BottomSheet';
@@ -48,6 +49,7 @@ export default function Home() {
   const flags = useFlags();
   const startTask = useStartTask();
   const { integrityFailed } = useLaunch();
+  const install = useInstall();
   const [amountFor, setAmountFor] = useState<Habit | null>(null);
   const [pastOpen, setPastOpen] = useState(false);
   const [entryOpen, setEntryOpen] = useState(false);
@@ -71,6 +73,7 @@ export default function Home() {
       startUsed: data.startUsed,
       integrityFailed: integrityFailed ?? false,
       backupDue: backupDue(settings.lastExportAt, data.hasRecords, now),
+      installDue: data.hasFirstRecord && !install.installed && install.method !== null && !settings.installPromptShown,
       dailyDone: data.dailyDone,
       dismissed: settings.dismissed,
     },
@@ -79,6 +82,8 @@ export default function Home() {
   const habitById = new Map(data.habits.map((h) => [h.id, h]));
   const unscheduled = unscheduledHabits(data.habits, today);
   const empty = !data.hasRecords && path.interrupts.length === 0;
+  // 割り込みカード6は1回だけ出す。「あとで」か追加のボタンを押したら、もう出さない
+  const installShown = () => void updateSettings({ installPromptShown: true }, Date.now());
   const dismiss = (id: string) => void updateSettings({ dismissed: { ...settings.dismissed, [id]: today } }, Date.now());
 
   return (
@@ -114,6 +119,23 @@ export default function Home() {
             <Button className="mt-3" onClick={() => navigate('/settings/data')}>
               {ja.today.interrupt.backupAction}
             </Button>
+          </InterruptCard>
+        ) : card.id === 'install' ? (
+          <InterruptCard key={card.id} onLater={installShown} testId="install-card">
+            <p className="pr-14 text-body">{ja.today.interrupt.install}</p>
+            {install.method === 'ios' ? (
+              <p className="mt-2 text-body text-text-2">{ja.today.interrupt.installIos}</p>
+            ) : (
+              <Button
+                className="mt-3"
+                onClick={async () => {
+                  installShown();
+                  await install.prompt();
+                }}
+              >
+                {ja.today.interrupt.installAction}
+              </Button>
+            )}
           </InterruptCard>
         ) : card.id === 'reason' ? (
           <ReasonCard
